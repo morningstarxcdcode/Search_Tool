@@ -24,6 +24,14 @@ import {
   Backdrop,
   CircularProgress,
   useTheme,
+  Radio,
+  RadioGroup,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -31,9 +39,14 @@ import {
   CloudDownload as CloudDownloadIcon,
   Sort as SortIcon,
   Clear as ClearIcon,
+  SmartToy as SmartToyIcon,
+  Psychology as PsychologyIcon,
+  Lock as LockIcon,
+  Warning as WarningIcon
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
+import ProductSaveButtons from '@/components/layout/ProductSaveButtons';
 
 // Mock data for product results
 const mockProducts = [
@@ -124,7 +137,15 @@ const mockProducts = [
 ];
 
 const SearchPage = () => {
-  const { user, loading, checkSubscription } = useAuth();
+  const { 
+    user, 
+    loading, 
+    checkSubscription, 
+    canExportCSV, 
+    canPerformRankingSearch,
+    canUseAIAssistant,
+    incrementSearchCount
+  } = useAuth();
   const router = useRouter();
   const theme = useTheme();
   
@@ -135,11 +156,22 @@ const SearchPage = () => {
   const [maxPrice, setMaxPrice] = useState('');
   const [sortBy, setSortBy] = useState('soldCount');
   const [isImportOnly, setIsImportOnly] = useState(true);
+  const [productType, setProductType] = useState('import');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [showBackdrop, setShowBackdrop] = useState(false);
+  const [canExport, setCanExport] = useState(false);
+  const [exportCount, setExportCount] = useState(0);
+  const [userPlan, setUserPlan] = useState('');
+  const [showAiSearch, setShowAiSearch] = useState(false);
+  const [aiSearchKeywords, setAiSearchKeywords] = useState<string[]>([]);
+  const [isAiSearching, setIsAiSearching] = useState(false);
+  const [canUseAi, setCanUseAi] = useState(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [searchCount, setSearchCount] = useState(0);
+  const [searchLimit, setSearchLimit] = useState(Infinity);
 
   const resultsPerPage = 5;
 
@@ -163,10 +195,57 @@ const SearchPage = () => {
     checkAuth();
   }, [loading, user, router, checkSubscription]);
 
+  // Check user permissions and limits
+  useEffect(() => {
+    const checkPermissions = async () => {
+      if (user) {
+        // Check if user can export CSV
+        const canExport = await canExportCSV();
+        setCanExport(canExport);
+        
+        // Get user plan
+        const plan = user.subscription.plan;
+        setUserPlan(plan);
+        
+        // Get search count and limit
+        setSearchCount(user.searchCount || 0);
+        
+        // Set search limit based on plan
+        const limits = {
+          'basic': 3,
+          'standard': 50,
+          'premium': Infinity
+        };
+        setSearchLimit(limits[plan as keyof typeof limits] || 0);
+        
+        // Check if user can use AI search
+        const canUseAiAssistant = await canUseAIAssistant();
+        setCanUseAi(canUseAiAssistant);
+        
+        // In a real app, would get export count from API
+        setExportCount(user.exportCount || 0);
+      }
+    };
+    
+    checkPermissions();
+  }, [user, canExportCSV, canUseAIAssistant]);
+
   // Handle search submit
-  const handleSearch = () => {
+  const handleSearch = async () => {
+    // Check if user can perform another search
+    const canSearch = await canPerformRankingSearch();
+    
+    if (!canSearch) {
+      setShowUpgradeDialog(true);
+      return;
+    }
+    
     setIsSearching(true);
     setShowBackdrop(true);
+    
+    // Increment search count
+    await incrementSearchCount();
+    setSearchCount((prev) => prev + 1);
     
     // Simulate API call delay
     setTimeout(() => {
@@ -183,8 +262,11 @@ const SearchPage = () => {
         results = results.filter(product => product.category === category);
       }
       
-      if (isImportOnly) {
+      // Filter by product type (import or regular)
+      if (productType === 'import') {
         results = results.filter(product => product.isImport);
+      } else if (productType === 'regular') {
+        results = results.filter(product => !product.isImport);
       }
       
       if (minPrice) {
@@ -195,19 +277,17 @@ const SearchPage = () => {
         results = results.filter(product => product.price <= parseInt(maxPrice));
       }
       
-      // Apply sorting
+      // Sort results
       results.sort((a, b) => {
-        switch (sortBy) {
-          case 'soldCount':
-            return b.soldCount - a.soldCount;
-          case 'price_asc':
-            return a.price - b.price;
-          case 'price_desc':
-            return b.price - a.price;
-          case 'revenue':
-            return b.revenueTotal - a.revenueTotal;
-          default:
-            return b.soldCount - a.soldCount;
+        if (sortBy === 'price_asc') {
+          return a.price - b.price;
+        } else if (sortBy === 'price_desc') {
+          return b.price - a.price;
+        } else if (sortBy === 'revenue') {
+          return b.revenueTotal - a.revenueTotal;
+        } else {
+          // Default: soldCount
+          return b.soldCount - a.soldCount;
         }
       });
       
@@ -239,11 +319,70 @@ const SearchPage = () => {
     setMaxPrice('');
     setSortBy('soldCount');
     setIsImportOnly(true);
+    setProductType('import');
   };
 
-  // Download CSV (mock function)
-  const handleDownloadCSV = () => {
-    alert('CSVダウンロード機能は実装予定です。');
+  // Handle CSV download
+  const handleDownloadCSV = async () => {
+    // Check if user can export CSV
+    const canExport = await canExportCSV();
+    
+    if (!canExport) {
+      setShowUpgradeDialog(true);
+      return;
+    }
+    
+    // In a real app, this would generate and download the CSV
+    alert('CSVがダウンロードされました。');
+  };
+
+  // Toggle AI search
+  const toggleAiSearch = async () => {
+    // Check if user can use AI search
+    if (!canUseAi) {
+      setShowUpgradeDialog(true);
+      return;
+    }
+    
+    setShowAiSearch(!showAiSearch);
+  };
+
+  // Handle AI search
+  const handleAiSearch = () => {
+    if (!canUseAi) return;
+    
+    setIsAiSearching(true);
+    
+    // In a real app, this would be an API call to an AI service
+    // For this demo, we'll simulate AI-enhanced search
+    setTimeout(() => {
+      // Simulate AI generating additional keywords for Chinese imports
+      const aiGenerated = [
+        '多機能',
+        'USB充電',
+        'ポータブル',
+        '折りたたみ式',
+        '高コスパ',
+        'LEDライト',
+        // Randomly select a few of these keywords
+      ].sort(() => 0.5 - Math.random()).slice(0, 3);
+      
+      setAiSearchKeywords([...aiGenerated]);
+      
+      // Incorporate AI keywords into search
+      let enhancedSearchTerm = searchTerm;
+      if (searchTerm) {
+        enhancedSearchTerm += ' ' + aiGenerated.join(' ');
+      } else {
+        enhancedSearchTerm = aiGenerated.join(' ');
+      }
+      
+      setSearchTerm(enhancedSearchTerm);
+      setIsAiSearching(false);
+      
+      // Automatically run the search with enhanced terms
+      handleSearch();
+    }, 2000);
   };
 
   // If loading, show a loading indicator
@@ -333,10 +472,23 @@ const SearchPage = () => {
             
             <Divider sx={{ my: 2 }} />
             
-            <Typography variant="subtitle1" gutterBottom>
-              <FilterListIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-              詳細検索
-            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                <FilterListIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                詳細検索
+              </Typography>
+              
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                startIcon={canUseAi ? <SmartToyIcon /> : <LockIcon />}
+                onClick={toggleAiSearch}
+                disabled={isAiSearching}
+              >
+                AI検索アシスタント {!canUseAi && '(プレミアム)'}
+              </Button>
+            </Box>
             
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6} md={3}>
@@ -359,11 +511,14 @@ const SearchPage = () => {
                 <TextField
                   select
                   fullWidth
-                  label="期間"
+                  label="表示期間"
                   value={period}
                   onChange={(e) => setPeriod(e.target.value)}
+                  variant="outlined"
                   size="small"
                 >
+                  <MenuItem value="today">本日</MenuItem>
+                  <MenuItem value="14days">過去14日</MenuItem>
                   <MenuItem value="30days">過去30日</MenuItem>
                   <MenuItem value="60days">過去60日</MenuItem>
                   <MenuItem value="90days">過去90日</MenuItem>
@@ -395,19 +550,26 @@ const SearchPage = () => {
                   size="small"
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <FormControl component="fieldset">
+              <Grid item xs={12} sm={6} md={4}>
+                <Typography variant="subtitle2" gutterBottom>
+                  商品タイプ
+                </Typography>
+                <RadioGroup
+                  value={productType}
+                  onChange={(e) => setProductType(e.target.value)}
+                  row
+                >
                   <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isImportOnly}
-                        onChange={(e) => setIsImportOnly(e.target.checked)}
-                        color="primary"
-                      />
-                    }
-                    label="中国輸入品のみ表示"
+                    value="import"
+                    control={<Radio size="small" />}
+                    label="中国物販"
                   />
-                </FormControl>
+                  <FormControlLabel
+                    value="regular"
+                    control={<Radio size="small" />}
+                    label="通常商品"
+                  />
+                </RadioGroup>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -434,6 +596,72 @@ const SearchPage = () => {
           </CardContent>
         </Card>
 
+        {/* AI Search Assistant Panel */}
+        {showAiSearch && (
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 2,
+              mb: 3,
+              borderLeft: '4px solid',
+              borderColor: 'secondary.main',
+              backgroundColor: 'rgba(156, 39, 176, 0.05)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <PsychologyIcon color="secondary" sx={{ mr: 1 }} />
+              <Typography variant="subtitle1">中国輸入品AI検索アシスタント</Typography>
+              <Chip
+                label="プレミアム機能"
+                size="small"
+                color="secondary"
+                variant="outlined"
+                sx={{ ml: 2 }}
+              />
+            </Box>
+            
+            <Typography variant="body2" paragraph>
+              AIが中国輸入品を見つけるのに最適なキーワードを提案します。検索エンジンが見逃しがちな商品も効率的に発見できます。
+            </Typography>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="body2" color="text.secondary">
+                入力されたキーワードに、中国輸入品発見に最適な追加キーワードをAIが提案します。
+              </Typography>
+              
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleAiSearch}
+                disabled={isAiSearching}
+                size="small"
+                startIcon={isAiSearching ? <CircularProgress size={20} color="inherit" /> : <SmartToyIcon />}
+              >
+                {isAiSearching ? 'AI分析中...' : 'AI分析を実行'}
+              </Button>
+            </Box>
+            
+            {aiSearchKeywords.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <Typography variant="body2" gutterBottom>
+                  AI提案キーワード:
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {aiSearchKeywords.map((keyword, index) => (
+                    <Chip
+                      key={index}
+                      label={keyword}
+                      color="secondary"
+                      size="small"
+                      sx={{ fontWeight: 'medium' }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+          </Paper>
+        )}
+
         {/* Search Results */}
         <Card>
           <CardContent>
@@ -458,10 +686,10 @@ const SearchPage = () => {
                     ),
                   }}
                 >
-                  <MenuItem value="soldCount">売上数（多い順）</MenuItem>
+                  <MenuItem value="soldCount">売上個数（多い順）</MenuItem>
+                  <MenuItem value="revenue">売上金額（多い順）</MenuItem>
                   <MenuItem value="price_asc">価格（安い順）</MenuItem>
                   <MenuItem value="price_desc">価格（高い順）</MenuItem>
-                  <MenuItem value="revenue">売上金額（多い順）</MenuItem>
                 </TextField>
                 
                 <Button
@@ -470,9 +698,14 @@ const SearchPage = () => {
                   startIcon={<CloudDownloadIcon />}
                   onClick={handleDownloadCSV}
                   size="small"
-                  disabled={searchResults.length === 0}
+                  disabled={searchResults.length === 0 || !canExport || (userPlan === 'standard' && exportCount >= 5)}
+                  title={!canExport ? 'CSVエクスポートは上位プランでご利用いただけます' : 
+                         (userPlan === 'standard' && exportCount >= 5) ? '今月のCSVエクスポート回数の上限に達しました' : 
+                         'CSVでダウンロード'}
                 >
-                  CSV
+                  CSV {userPlan === 'standard' && (
+                    <Typography variant="caption" sx={{ ml: 0.5 }}>({5 - exportCount}/5)</Typography>
+                  )}
                 </Button>
               </Box>
             </Box>
@@ -541,7 +774,8 @@ const SearchPage = () => {
                             <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ flex: 1 }}>
                               {product.title}
                             </Typography>
-                            <Box>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <ProductSaveButtons productId={product.id} productTitle={product.title} />
                               <Chip
                                 label={product.category}
                                 size="small"
@@ -613,7 +847,7 @@ const SearchPage = () => {
                                   出品者: {product.seller} • 最終販売日: {product.lastSoldDate}
                                 </Typography>
                                 <Button size="small" variant="outlined">
-                                  詳細
+                                  競合詳細
                                 </Button>
                               </Box>
                             </Grid>
@@ -655,7 +889,95 @@ const SearchPage = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Search Limit Info */}
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            mb: 2
+          }}
+        >
+          <Typography variant="body2" color="text.secondary">
+            検索回数: {searchCount} / {searchLimit === Infinity ? '無制限' : searchLimit}
+          </Typography>
+          
+          {userPlan !== 'premium' && (
+            <Button 
+              size="small" 
+              variant="outlined" 
+              onClick={() => router.push('/subscription')}
+            >
+              アップグレード
+            </Button>
+          )}
+        </Box>
+
+        {/* Add AI Assistant button with proper permission check */}
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={canUseAi ? <SmartToyIcon /> : <LockIcon />}
+            onClick={toggleAiSearch}
+            disabled={isAiSearching}
+            sx={{ 
+              mb: 2,
+              opacity: canUseAi ? 1 : 0.7
+            }}
+          >
+            AIアシスタント {!canUseAi && <Typography variant="caption" sx={{ ml: 1 }}>プレミアム限定</Typography>}
+          </Button>
+        </Box>
       </Container>
+
+      {/* Upgrade Dialog */}
+      <Dialog
+        open={showUpgradeDialog}
+        onClose={() => setShowUpgradeDialog(false)}
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <WarningIcon color="warning" sx={{ mr: 1 }} />
+            機能制限のお知らせ
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {userPlan === 'basic' ? (
+              <>
+                ベーシックプランでは月に3回までの検索が可能です。上限に達しました。
+                より多くの検索をご希望の場合は、上位プランへのアップグレードをご検討ください。
+              </>
+            ) : userPlan === 'standard' ? (
+              <>
+                スタンダードプランでは月に50回までの検索が可能です。上限に達しました。
+                無制限の検索をご希望の場合は、プレミアムプランへのアップグレードをご検討ください。
+              </>
+            ) : (
+              <>
+                この機能を利用するには、プレミアムプランへのアップグレードが必要です。
+              </>
+            )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowUpgradeDialog(false)}>
+            閉じる
+          </Button>
+          <Button 
+            variant="contained" 
+            color="primary"
+            onClick={() => {
+              setShowUpgradeDialog(false);
+              router.push('/subscription');
+            }}
+          >
+            プランをアップグレード
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

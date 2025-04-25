@@ -25,6 +25,12 @@ import {
   Divider,
   IconButton,
   useTheme,
+  Avatar,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import {
   GetApp as GetAppIcon,
@@ -32,6 +38,7 @@ import {
   Sort as SortIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
+  EmojiEvents as EmojiEventsIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -54,6 +61,52 @@ const TabPanel = (props: TabPanelProps) => {
     >
       {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
     </div>
+  );
+};
+
+interface RankBadgeProps {
+  rank: number;
+}
+
+const RankBadge: React.FC<RankBadgeProps> = ({ rank }) => {
+  if (rank > 3) {
+    return <Typography variant="body1" fontWeight={600}>{rank}</Typography>;
+  }
+  
+  // Choose color based on rank
+  const colors = {
+    1: '#FFD700', // Gold
+    2: '#C0C0C0', // Silver
+    3: '#CD7F32', // Bronze
+  };
+  
+  const badges = {
+    1: '金',
+    2: '銀',
+    3: '銅'
+  };
+  
+  return (
+    <Box
+      sx={{
+        width: 30,
+        height: 30,
+        borderRadius: '50%',
+        backgroundColor: colors[rank as 1 | 2 | 3],
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+      }}
+    >
+      <Typography
+        variant="body2"
+        fontWeight={700}
+        sx={{ color: rank === 2 ? '#333' : '#fff' }}
+      >
+        {badges[rank as 1 | 2 | 3]}
+      </Typography>
+    </Box>
   );
 };
 
@@ -182,7 +235,7 @@ const mockRankings = [
 ];
 
 const RankingsPage = () => {
-  const { user, loading, checkSubscription } = useAuth();
+  const { user, loading, checkSubscription, canPerformRankingSearch } = useAuth();
   const router = useRouter();
   const theme = useTheme();
   
@@ -195,6 +248,10 @@ const RankingsPage = () => {
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  const [canSearch, setCanSearch] = useState(false);
+  const [searchCount, setSearchCount] = useState(0);
+  const [userPlan, setUserPlan] = useState('');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Check if user is logged in and has active subscription
   useEffect(() => {
@@ -216,6 +273,24 @@ const RankingsPage = () => {
     checkAuth();
   }, [loading, user, router, checkSubscription]);
 
+  // Check if user can perform search
+  useEffect(() => {
+    const checkSearchPermission = async () => {
+      if (user) {
+        const canSearch = await canPerformRankingSearch();
+        setCanSearch(canSearch);
+        
+        const plan = await checkSubscription();
+        setUserPlan(typeof plan === 'string' ? plan : '');
+        
+        // In a real app, this would be fetched from the backend
+        setSearchCount(user.searchCount || 0);
+      }
+    };
+    
+    checkSearchPermission();
+  }, [user, canPerformRankingSearch, checkSubscription]);
+
   // Handle filter changes
   useEffect(() => {
     if (user) {
@@ -225,7 +300,16 @@ const RankingsPage = () => {
 
   // Mock API call to fetch rankings
   const fetchRankings = () => {
+    // Check if user can perform search based on their plan
+    if (!canSearch) {
+      setShowUpgradeModal(true);
+      return;
+    }
+    
     setIsLoading(true);
+    
+    // In a real app, increment the search count in the backend
+    setSearchCount(prev => prev + 1);
     
     // Simulate API delay
     setTimeout(() => {
@@ -380,6 +464,26 @@ const RankingsPage = () => {
           </CardContent>
         </Card>
         
+        {/* Add a subscription limit indicator in the UI, right after the filters card */}
+        {userPlan && (
+          <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="body2" color="text.secondary">
+              {userPlan === 'basic' && `ランキング検索: ${searchCount}/3 (今月)`}
+              {userPlan === 'standard' && `ランキング検索: ${searchCount}/50 (今月)`}
+              {userPlan === 'premium' && 'ランキング検索: 無制限'}
+            </Typography>
+            {userPlan !== 'premium' && (
+              <Button 
+                size="small" 
+                color="primary" 
+                onClick={() => router.push('/subscription')}
+              >
+                プランをアップグレード
+              </Button>
+            )}
+          </Box>
+        )}
+        
         {/* Tabs for different period views */}
         <Box sx={{ mb: 2 }}>
           <Tabs
@@ -479,21 +583,9 @@ const RankingsPage = () => {
                             backgroundColor: row.rank <= 3 ? 'rgba(255, 204, 0, 0.05)' : 'inherit',
                           }}
                         >
-                          <TableCell sx={{ padding: '12px 16px' }}>
-                            <Box sx={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center',
-                              width: 32,
-                              height: 32,
-                              borderRadius: '50%',
-                              color: row.rank <= 3 ? 'white' : 'text.primary',
-                              bgcolor: row.rank === 1 ? 'gold' : 
-                                row.rank === 2 ? 'silver' :
-                                row.rank === 3 ? '#cd7f32' : 'transparent',
-                              fontWeight: 'bold',
-                            }}>
-                              {row.rank}
+                          <TableCell width="60">
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <RankBadge rank={row.rank} />
                             </Box>
                           </TableCell>
                           <TableCell sx={{ padding: '12px 16px' }}>
@@ -616,6 +708,31 @@ const RankingsPage = () => {
             </Grid>
           </CardContent>
         </Card>
+
+        {/* Add a modal to prompt users to upgrade when they reach their limit */}
+        <Dialog open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)}>
+          <DialogTitle>検索回数制限に達しました</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {userPlan === 'basic' 
+                ? '基本プランでは月に3回までの検索が可能です。より多くの検索を行うには、スタンダードプランまたはプレミアムプランにアップグレードしてください。' 
+                : 'スタンダードプランでは月に50回までの検索が可能です。無制限の検索を行うには、プレミアムプランにアップグレードしてください。'}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setShowUpgradeModal(false)}>閉じる</Button>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={() => {
+                setShowUpgradeModal(false);
+                router.push('/subscription');
+              }}
+            >
+              プランをアップグレード
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </>
   );

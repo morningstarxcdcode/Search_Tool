@@ -100,6 +100,10 @@ const SignupPage = () => {
             </Alert>
           )}
           
+          <Alert severity="info" sx={{ width: '100%', mb: 2 }}>
+            デモ用アカウントはログインページから: admin@gmail.com / 123456 でログインできます
+          </Alert>
+          
           <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
             <TextField
               margin="normal"

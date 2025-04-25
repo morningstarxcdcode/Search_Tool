@@ -85,6 +85,10 @@ const LoginPage = () => {
             </Alert>
           )}
           
+          <Alert severity="info" sx={{ width: '100%', mb: 2 }}>
+            デモ用ログイン情報: admin@gmail.com / 123456
+          </Alert>
+          
           <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
             <TextField
               margin="normal"

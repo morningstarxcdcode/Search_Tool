@@ -22,6 +22,11 @@ import {
   TableRow,
   IconButton,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -30,6 +35,7 @@ import {
   Info as InfoIcon,
   Check as CheckIcon,
   Close as CloseIcon,
+  Warning as WarningIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -126,7 +132,13 @@ const DataSection = ({ title, data }: DataSectionProps) => (
 );
 
 const ProductAnalysisPage = () => {
-  const { user, loading, checkSubscription } = useAuth();
+  const { 
+    user, 
+    loading, 
+    checkSubscription, 
+    canViewCompetitorAnalysis,
+    incrementCompetitorAnalysisCount
+  } = useAuth();
   const router = useRouter();
   const theme = useTheme();
   const { id } = router.query;
@@ -134,6 +146,10 @@ const ProductAnalysisPage = () => {
   const [productData, setProductData] = useState<ProductDataType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSubscription, setHasSubscription] = useState(false);
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  const [competitorAnalysisCount, setCompetitorAnalysisCount] = useState(0);
+  const [competitorAnalysisLimit, setCompetitorAnalysisLimit] = useState(Infinity);
+  const [userPlan, setUserPlan] = useState('');
 
   // Check authentication and subscription
   useEffect(() => {
@@ -145,6 +161,20 @@ const ProductAnalysisPage = () => {
           const isSubscribed = await checkSubscription();
           setHasSubscription(isSubscribed);
           if (!isSubscribed) router.push('/subscription');
+          
+          // Set user plan
+          setUserPlan(user.subscription.plan);
+          
+          // Set competitor analysis count and limit
+          setCompetitorAnalysisCount(user.competitorAnalysisCount || 0);
+          
+          // Set analysis limit based on plan
+          const limits = {
+            'basic': 3,
+            'standard': 50,
+            'premium': Infinity
+          };
+          setCompetitorAnalysisLimit(limits[user.subscription.plan as keyof typeof limits] || 0);
         }
       }
     };
@@ -156,8 +186,20 @@ const ProductAnalysisPage = () => {
     if (user && id) fetchProductData();
   }, [id, user]);
 
-  const fetchProductData = () => {
+  const fetchProductData = async () => {
+    // Check if user can view more competitor analyses
+    const canView = await canViewCompetitorAnalysis();
+    if (!canView) {
+      setShowUpgradeDialog(true);
+      return;
+    }
+    
     setIsLoading(true);
+    
+    // Increment the competitor analysis count
+    await incrementCompetitorAnalysisCount();
+    setCompetitorAnalysisCount(prev => prev + 1);
+    
     // Simulate API delay
     setTimeout(() => {
       setProductData(mockProductData);
@@ -166,6 +208,7 @@ const ProductAnalysisPage = () => {
   };
 
   const handleBack = () => router.back();
+  
   const handleDownloadCSV = () => alert('CSVダウンロード機能は実装予定です。');
 
   // Loading state
@@ -201,102 +244,149 @@ const ProductAnalysisPage = () => {
   return (
     <>
       <Head>
-        <title>商品分析 | Seller Navi</title>
+        <title>競合分析 | Seller Navi</title>
       </Head>
       
-      <Container maxWidth="lg">
-        {/* Page Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <IconButton onClick={handleBack} sx={{ mr: 2 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h4" component="h1" fontWeight={600}>
-            商品分析
-          </Typography>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Button
+            startIcon={<ArrowBackIcon />}
+            onClick={handleBack}
+          >
+            検索結果へ戻る
+          </Button>
+          
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'right', mb: 1 }}>
+              競合分析: {competitorAnalysisCount} / {competitorAnalysisLimit === Infinity ? '無制限' : competitorAnalysisLimit}
+            </Typography>
+            
+            {userPlan !== 'premium' && (
+              <Button 
+                size="small" 
+                variant="outlined" 
+                onClick={() => router.push('/subscription')}
+              >
+                アップグレード
+              </Button>
+            )}
+          </Box>
         </Box>
         
-        {/* Product Overview Card */}
+        {/* Product details card */}
         <Card sx={{ mb: 4 }}>
           <CardContent>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={3}>
-                <Box sx={{ 
-                  width: '100%', 
-                  height: 200, 
-                  bgcolor: 'grey.200', 
-                  borderRadius: 1,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
+              <Grid item xs={12} md={4}>
+                <Box 
+                  sx={{
+                    width: '100%',
+                    height: 250,
+                    bgcolor: 'grey.100',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 1,
+                    mb: 2
+                  }}
+                >
                   <Typography variant="body2" color="text.secondary">
                     商品画像
                   </Typography>
                 </Box>
+                
+                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                  {productData.keywords.map((keyword, index) => (
+                    <Chip 
+                      key={index} 
+                      label={keyword} 
+                      size="small" 
+                      color="primary" 
+                      variant="outlined" 
+                    />
+                  ))}
+                </Stack>
               </Grid>
               
-              <Grid item xs={12} sm={9}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <Box>
-                    <Typography variant="h5" fontWeight={600} gutterBottom>
-                      {productData.title}
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
-                      <Chip 
-                        label={productData.category} 
-                        size="small" 
-                        sx={{ backgroundColor: 'rgba(33, 150, 243, 0.1)', color: 'info.main' }} 
-                      />
-                      {productData.isImport && <Chip label="輸入品" size="small" color="secondary" />}
-                      {productData.keywords.map((keyword, index) => (
-                        <Chip 
-                          key={index}
-                          label={keyword} 
-                          size="small" 
-                          variant="outlined"
-                          sx={{ fontSize: '0.75rem' }}
-                        />
-                      ))}
-                    </Box>
-                    <Typography variant="body2" color="text.secondary" paragraph>
-                      {productData.description}
-                    </Typography>
-                  </Box>
-                  <Button
-                    variant="outlined"
-                    startIcon={<CloudDownloadIcon />}
-                    onClick={handleDownloadCSV}
-                    sx={{ ml: 2 }}
-                  >
-                    データ出力
-                  </Button>
-                </Box>
+              <Grid item xs={12} md={8}>
+                <Typography variant="h5" gutterBottom>
+                  {productData.title}
+                </Typography>
                 
-                <Divider sx={{ my: 2 }} />
-                
-                <Grid container spacing={2}>
+                <Grid container spacing={2} sx={{ mb: 2 }}>
                   <Grid item xs={6} sm={3}>
-                    <Typography variant="body2" color="text.secondary">価格</Typography>
-                    <Typography variant="h6" color="primary.main" fontWeight={600}>
+                    <Typography variant="body2" color="text.secondary">
+                      価格
+                    </Typography>
+                    <Typography variant="h6">
                       ¥{productData.price.toLocaleString()}
                     </Typography>
                   </Grid>
+                  
                   <Grid item xs={6} sm={3}>
-                    <Typography variant="body2" color="text.secondary">累計販売数</Typography>
-                    <Typography variant="h6" fontWeight={600}>
+                    <Typography variant="body2" color="text.secondary">
+                      販売数
+                    </Typography>
+                    <Typography variant="h6">
                       {productData.soldCount}個
                     </Typography>
                   </Grid>
+                  
                   <Grid item xs={6} sm={3}>
-                    <Typography variant="body2" color="text.secondary">累計売上</Typography>
-                    <Typography variant="h6" fontWeight={600}>
+                    <Typography variant="body2" color="text.secondary">
+                      総売上
+                    </Typography>
+                    <Typography variant="h6">
                       ¥{productData.revenueTotal.toLocaleString()}
                     </Typography>
                   </Grid>
+                  
                   <Grid item xs={6} sm={3}>
-                    <Typography variant="body2" color="text.secondary">トレンド</Typography>
-                    <Typography variant="h6" color="success.main" fontWeight={600}>
+                    <Typography variant="body2" color="text.secondary">
+                      トレンド
+                    </Typography>
+                    <Typography variant="h6" color="success.main" sx={{ display: 'flex', alignItems: 'center' }}>
+                      <TrendingUpIcon fontSize="small" sx={{ mr: 0.5 }} />
                       {productData.trendChange}
+                    </Typography>
+                  </Grid>
+                </Grid>
+                
+                <Typography variant="body2" paragraph>
+                  {productData.description}
+                </Typography>
+                
+                <Divider sx={{ my: 2 }} />
+                
+                <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                  商品詳細
+                </Typography>
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={6} sm={4}>
+                    <Typography variant="body2" color="text.secondary">
+                      出品者
+                    </Typography>
+                    <Typography variant="body1">
+                      {productData.seller}
+                    </Typography>
+                  </Grid>
+                  
+                  <Grid item xs={6} sm={4}>
+                    <Typography variant="body2" color="text.secondary">
+                      カテゴリ
+                    </Typography>
+                    <Typography variant="body1">
+                      {productData.category}
+                    </Typography>
+                  </Grid>
+                  
+                  <Grid item xs={6} sm={4}>
+                    <Typography variant="body2" color="text.secondary">
+                      競合数
+                    </Typography>
+                    <Typography variant="body1">
+                      {productData.competition}社
                     </Typography>
                   </Grid>
                 </Grid>
@@ -305,157 +395,113 @@ const ProductAnalysisPage = () => {
           </CardContent>
         </Card>
         
-        {/* Market Analysis Section */}
-        <Typography variant="h5" sx={{ mb: 2 }}>市場分析</Typography>
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* Competitors table */}
+        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+          競合詳細
+          <InfoIcon fontSize="small" color="action" sx={{ ml: 1 }} />
+        </Typography>
+        
+        <TableContainer component={Paper} sx={{ mb: 4 }}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>出品者</TableCell>
+                <TableCell align="right">価格</TableCell>
+                <TableCell align="right">販売数</TableCell>
+                <TableCell align="right">評価</TableCell>
+                <TableCell align="right">差別化ポイント</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {productData.competitors.map((competitor, index) => (
+                <TableRow key={index}>
+                  <TableCell component="th" scope="row">
+                    {competitor.name}
+                  </TableCell>
+                  <TableCell align="right">
+                    ¥{competitor.price.toLocaleString()}
+                    {competitor.price < productData.price ? (
+                      <Typography component="span" color="error.main" fontSize="small" sx={{ ml: 1 }}>
+                        -¥{(productData.price - competitor.price).toLocaleString()}
+                      </Typography>
+                    ) : (
+                      <Typography component="span" color="success.main" fontSize="small" sx={{ ml: 1 }}>
+                        +¥{(competitor.price - productData.price).toLocaleString()}
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell align="right">{competitor.soldCount}個</TableCell>
+                  <TableCell align="right">{competitor.rating}</TableCell>
+                  <TableCell align="right">
+                    {Math.random() > 0.5 ? (
+                      <CheckIcon fontSize="small" color="success" />
+                    ) : (
+                      <CloseIcon fontSize="small" color="error" />
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        
+        {/* Market insights and supply details */}
+        <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <DataSection title="市場サマリー" data={marketInsightsData} />
+            <DataSection title="市場分析" data={marketInsightsData} />
           </Grid>
           <Grid item xs={12} md={6}>
             <DataSection title="仕入れ情報" data={supplyDetailsData} />
           </Grid>
         </Grid>
-        
-        {/* Competitor Analysis Section */}
-        <Typography variant="h5" sx={{ mb: 2 }}>競合分析</Typography>
-        <Card sx={{ mb: 4 }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">
-                主要競合 ({productData.competitors.length}社)
-              </Typography>
-              <Chip
-                label={`競合レベル: ${productData.competition > 15 ? '高' : productData.competition > 8 ? '中' : '低'}`}
-                color={productData.competition > 15 ? 'error' : productData.competition > 8 ? 'warning' : 'success'}
-              />
-            </Box>
-            <TableContainer component={Paper} sx={{ boxShadow: 'none' }}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>出品者名</TableCell>
-                    <TableCell align="right">価格</TableCell>
-                    <TableCell align="right">販売数</TableCell>
-                    <TableCell align="right">評価</TableCell>
-                    <TableCell align="right">差別化ポイント</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {productData.competitors.map((competitor, index) => (
-                    <TableRow key={index}>
-                      <TableCell component="th" scope="row">{competitor.name}</TableCell>
-                      <TableCell align="right" sx={{ 
-                        color: competitor.price > productData.price ? 'success.main' : 
-                              competitor.price < productData.price ? 'error.main' : 'text.primary',
-                        fontWeight: competitor.price === productData.price ? 600 : 400
-                      }}>
-                        ¥{competitor.price.toLocaleString()}
-                        {competitor.price !== productData.price && (
-                          <Typography variant="caption" display="block" color="text.secondary">
-                            {competitor.price > productData.price ? `+${competitor.price - productData.price}` : `${competitor.price - productData.price}`}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell align="right">{competitor.soldCount}</TableCell>
-                      <TableCell align="right">{competitor.rating}</TableCell>
-                      <TableCell align="right">
-                        {index === 0 && '高級感のあるデザイン'}
-                        {index === 1 && '低価格戦略'}
-                        {index === 2 && 'ブランディング、高評価'}
-                        {index === 3 && '特になし'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
-        </Card>
-        
-        {/* Business Recommendation Section */}
-        <Typography variant="h5" sx={{ mb: 2 }}>ビジネス提案</Typography>
-        <Card>
-          <CardContent>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom>参入判断</Typography>
-                <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <CheckIcon color="success" fontSize="large" />
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        参入おすすめ度: 高
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        市場規模と需要の伸びから、参入の好機と判断できます。
-                      </Typography>
-                    </Box>
-                  </Stack>
-                </Paper>
-                
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom>メリット</Typography>
-                <Box sx={{ mb: 2 }}>
-                  <Stack spacing={1}>
-                    {[
-                      '安定した需要がある',
-                      '利益率が高い (35-45%)',
-                      '季節性が低く年間を通して販売可能'
-                    ].map((benefit, index) => (
-                      <Box key={index} sx={{ display: 'flex', gap: 1 }}>
-                        <CheckIcon color="success" fontSize="small" />
-                        <Typography variant="body2">{benefit}</Typography>
-                      </Box>
-                    ))}
-                  </Stack>
-                </Box>
-                
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom>リスク</Typography>
-                <Stack spacing={1}>
-                  {[
-                    '競合が多い',
-                    '品質リスクが中程度'
-                  ].map((risk, index) => (
-                    <Box key={index} sx={{ display: 'flex', gap: 1 }}>
-                      <CloseIcon color="error" fontSize="small" />
-                      <Typography variant="body2">{risk}</Typography>
-                    </Box>
-                  ))}
-                </Stack>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom>差別化戦略</Typography>
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="body2" paragraph>
-                    競合分析から、以下の差別化戦略を提案します：
-                  </Typography>
-                  <Stack spacing={2}>
-                    {[
-                      {
-                        title: '価格戦略',
-                        content: '¥2,980~¥3,100の価格帯で出品し、競合より低価格を実現しながら利益率を確保。'
-                      },
-                      {
-                        title: '商品強化',
-                        content: 'より長いバッテリー寿命とノイズキャンセリング性能を強調し、商品説明で訴求。'
-                      },
-                      {
-                        title: 'マーケティング',
-                        content: '「ワイヤレスイヤホン 防水 高音質」などのキーワード最適化と、初回購入者向けの特典を検討。'
-                      }
-                    ].map((strategy, index) => (
-                      <Paper key={index} variant="outlined" sx={{ p: 2 }}>
-                        <Typography variant="subtitle2" gutterBottom>{strategy.title}</Typography>
-                        <Typography variant="body2">{strategy.content}</Typography>
-                      </Paper>
-                    ))}
-                  </Stack>
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
       </Container>
+      
+      {/* Upgrade Dialog */}
+      <Dialog
+        open={showUpgradeDialog}
+        onClose={() => setShowUpgradeDialog(false)}
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <WarningIcon color="warning" sx={{ mr: 1 }} />
+            機能制限のお知らせ
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {userPlan === 'basic' ? (
+              <>
+                ベーシックプランでは月に3回までの競合分析が可能です。上限に達しました。
+                より多くの分析をご希望の場合は、上位プランへのアップグレードをご検討ください。
+              </>
+            ) : userPlan === 'standard' ? (
+              <>
+                スタンダードプランでは月に50回までの競合分析が可能です。上限に達しました。
+                無制限の分析をご希望の場合は、プレミアムプランへのアップグレードをご検討ください。
+              </>
+            ) : (
+              <>
+                この機能を利用するには、プランへのアップグレードが必要です。
+              </>
+            )}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowUpgradeDialog(false)}>
+            閉じる
+          </Button>
+          <Button 
+            variant="contained" 
+            color="primary"
+            onClick={() => {
+              setShowUpgradeDialog(false);
+              router.push('/subscription');
+            }}
+          >
+            プランをアップグレード
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

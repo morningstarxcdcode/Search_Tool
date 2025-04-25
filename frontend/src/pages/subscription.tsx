@@ -29,8 +29,12 @@ const plans = [
     period: '月額',
     features: [
       '基本リサーチ機能',
-      '月間100件の商品検索',
-      'カテゴリ別ランキング',
+      'ランキング検索（月3回まで）',
+      '競合分析（月3回まで）',
+      'カテゴリ別基本ランキング表示',
+      '基本的な売上データ表示',
+      'CSV出力（なし）',
+      '検索履歴（保存なし）',
       'メールサポート',
     ],
     recommended: false,
@@ -41,11 +45,13 @@ const plans = [
     price: '4,980',
     period: '月額',
     features: [
-      '基本リサーチ機能',
-      '月間500件の商品検索',
-      'カテゴリ別ランキング',
-      'キーワード分析',
-      '売上予測',
+      'ベーシックプランの全機能',
+      'ランキング検索（月50回まで）',
+      '競合分析（月50回まで）',
+      'CSVデータ出力（月5回まで）',
+      '検索履歴（7日間保存）',
+      'カスタムタグ付け機能',
+      '商品に★マーク付け機能',
       'メール・チャットサポート',
     ],
     recommended: true,
@@ -56,14 +62,16 @@ const plans = [
     price: '9,980',
     period: '月額',
     features: [
-      '基本リサーチ機能',
-      '無制限の商品検索',
-      'カテゴリ別ランキング',
-      'キーワード分析',
-      '売上予測',
-      '競合分析',
-      '市場動向レポート',
-      '専任サポート',
+      'スタンダードプランの全機能',
+      'ランキング検索（無制限）',
+      '競合分析（無制限）',
+      'CSVデータ出力（無制限）',
+      '検索履歴（無制限保存）',
+      'AIによる検索補助',
+      'カスタムタグ付け機能',
+      'リアルタイム通知機能',
+      'カスタムレポート作成',
+      '優先サポート（24時間以内）',
     ],
     recommended: false,
   },
@@ -88,6 +96,19 @@ const SubscriptionPage = () => {
     // For demo purposes, we'll just simulate a processing delay
     setTimeout(() => {
       setIsProcessing(false);
+      
+      // Update user's subscription in localStorage for the demo
+      if (user) {
+        const updatedUser = {
+          ...user,
+          subscription: {
+            ...user.subscription,
+            plan: selectedPlan
+          }
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+      
       // Redirect to dashboard after successful subscription
       router.push('/dashboard');
     }, 2000);
@@ -111,6 +132,7 @@ const SubscriptionPage = () => {
             width={200}
             height={70}
             style={{ objectFit: 'contain' }}
+            priority
           />
           
           <Typography variant="h4" component="h1" sx={{ mt: 4, mb: 2, fontWeight: 600 }}>
@@ -118,7 +140,7 @@ const SubscriptionPage = () => {
           </Typography>
           
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 700, mx: 'auto' }}>
-            あなたのビジネスに最適なプランを選択して、eSelling Naviの機能をフル活用しましょう。
+            あなたのビジネスに最適なプランを選択して、Seller Naviの機能をフル活用しましょう。
             {user && <> {user.name}様にぴったりのプランをお選びください。</>}
           </Typography>
         </Box>
@@ -240,13 +262,27 @@ const SubscriptionPage = () => {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 はい、いつでもキャンセル可能です。次回の請求日前までにキャンセルいただければ、追加料金は発生しません。
               </Typography>
+              
+              <Typography variant="subtitle1" fontWeight={600}>
+                プランはいつでも変更できますか？
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                はい、いつでもプランを変更できます。アップグレードの場合は即時反映され、ダウングレードの場合は次回の請求日から適用されます。
+              </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
               <Typography variant="subtitle1" fontWeight={600}>
-                プランの変更はできますか？
+                無料トライアルはありますか？
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                いつでもプランのアップグレードやダウングレードが可能です。変更は即時反映され、料金は日割り計算されます。
+                はい、14日間の無料トライアルをご用意しています。トライアル期間中に解約された場合、料金は発生しません。
+              </Typography>
+              
+              <Typography variant="subtitle1" fontWeight={600}>
+                サポートはどのような形で受けられますか？
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                プランによって異なります。ベーシックプランではメールサポート、スタンダードプランではメール・チャットサポート、プレミアムプランでは24時間以内の優先サポートをご利用いただけます。
               </Typography>
             </Grid>
           </Grid>
