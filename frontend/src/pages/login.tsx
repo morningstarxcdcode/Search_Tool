@@ -38,8 +38,10 @@ const LoginPage = () => {
     
     try {
       await login(email, password);
+      router.push('/dashboard');
     } catch (err) {
       console.error('Login error:', err);
+      setFormError('ログインに失敗しました。メールアドレスとパスワードを確認してください。');
     }
   };
   

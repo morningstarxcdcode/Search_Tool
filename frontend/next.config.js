@@ -9,6 +9,7 @@ const nextConfig = {
         hostname: 'static.mercdn.net',
       },
     ],
+    domains: ['assets.mercari-shops-static.com'],
   },
   async rewrites() {
     return [

@@ -9,13 +9,9 @@ interface User {
   searchCount?: number;
   exportCount?: number;
   competitorAnalysisCount?: number;
-  companyName?: string;
   phoneNumber?: string;
-  subscription: {
-    active: boolean;
-    plan: string;
-    expiresAt: string;
-  };
+  plan?: string;
+  companyName?: string;
 }
 
 interface AuthContextType {
@@ -36,6 +32,7 @@ interface AuthContextType {
   incrementSearchCount: () => Promise<void>;
   incrementCompetitorAnalysisCount: () => Promise<void>;
   incrementExportCount: () => Promise<void>;
+  updateUserPlan: (plan: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -56,6 +53,7 @@ const AuthContext = createContext<AuthContextType>({
   incrementSearchCount: async () => {},
   incrementCompetitorAnalysisCount: async () => {},
   incrementExportCount: async () => {},
+  updateUserPlan: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -70,24 +68,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  // Configure axios defaults
+  axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/';
+
+  // Add request interceptor to add auth token
+  axios.interceptors.request.use(
+    (config) => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+
   // Check if user is logged in on initial load
   useEffect(() => {
     const checkUser = async () => {
       setLoading(true);
       try {
-        // In a real app, this would be an API call to verify the token
-        const storedUser = localStorage.getItem('user');
-        
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          
-          // Check if token is still valid
-          // For the demo we're just using the presence of the user in localStorage
-          setUser(parsedUser);
+        const token = localStorage.getItem('token');
+        if (token) {
+          const response = await axios.get('api/v1/auth/me');
+          setUser(response.data);
         }
       } catch (err) {
         console.error('Error checking authentication', err);
         setError('Failed to authenticate');
+        localStorage.removeItem('token');
       } finally {
         setLoading(false);
       }
@@ -101,37 +112,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
     
     try {
-      // Check for admin credentials
-      // Only allow login with the specified admin credentials for the demo
-      if (email !== 'admin@gmail.com' || password !== '123456') {
-        throw new Error('Invalid credentials');
-      }
-      
-      // This would be an API call in a real app
-      // For the demo, we'll simulate a successful login
-      const mockUser: User = {
-        id: 'user123',
-        email,
-        name: 'Admin User',
-        searchCount: 0,
-        exportCount: 0,
-        competitorAnalysisCount: 0,
-        subscription: {
-          active: true,
-          plan: 'standard',
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
-        },
-      };
-      
-      // Store user in localStorage
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      setUser(mockUser);
-      
-      // Redirect to dashboard
-      router.push('/dashboard');
+      const response = await axios.post('api/v1/auth/token', 
+        new URLSearchParams({
+          username: email,
+          password: password
+        }), {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+
+      const { access_token, token_type } = response.data;
+      localStorage.setItem('token', access_token);
+      localStorage.setItem('token_type', token_type);
+
+      // Get user data
+      const userResponse = await axios.get('api/v1/auth/me');
+      setUser(userResponse.data);
     } catch (err) {
       console.error('Login error', err);
-      setError('Invalid email or password');
+      throw new Error('Invalid email or password');
     } finally {
       setLoading(false);
     }
@@ -142,27 +143,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setError(null);
     
     try {
-      // In a demo app, we don't want to actually create new accounts
-      // We'll just show a success message and redirect to login
-      setTimeout(() => {
-        setLoading(false);
-        // Redirect to login page instead of actually creating an account
-        router.push('/login');
-      }, 1000);
+      await axios.post('api/v1/auth/register', {
+        email,
+        name,
+        password,
+        role: 'user'
+      });
     } catch (err) {
       console.error('Signup error', err);
-      setError('アカウント作成に失敗しました。デモアカウントをご利用ください。');
+      throw new Error('Failed to create account');
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
-    // Remove user from localStorage
-    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    localStorage.removeItem('token_type');
     setUser(null);
-    
-    // Redirect to home
     router.push('/');
   };
 
@@ -170,9 +168,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (!user) return false;
     
     try {
-      // In a real app, this would be an API call
-      // For the demo, we'll use the user's subscription status
-      return user.subscription.active;
+      const response = await axios.get('/api/v1/auth/me');
+      return !!response.data.plan;
     } catch (err) {
       console.error('Error checking subscription', err);
       return false;
@@ -196,7 +193,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       'premium': Infinity
     };
     
-    const userPlan = user.subscription.plan;
+    const userPlan = user.plan || 'basic';
     return currentSearchCount < searchLimits[userPlan];
   };
 
@@ -217,7 +214,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       'premium': Infinity
     };
     
-    const userPlan = user.subscription.plan;
+    const userPlan = user.plan || 'basic';
     return currentAnalysisCount < analysisLimits[userPlan];
   };
 
@@ -228,7 +225,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const isSubscribed = await checkSubscription();
     if (!isSubscribed) return false;
     
-    const userPlan = user.subscription.plan;
+    const userPlan = user.plan || 'basic';
     
     // Basic plan can't export CSV
     if (userPlan === 'basic') return false;
@@ -252,7 +249,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const isSubscribed = await checkSubscription();
     if (!isSubscribed) return false;
     
-    const userPlan = user.subscription.plan;
+    const userPlan = user.plan || 'basic';
     
     // Basic plan can't save search history
     if (userPlan === 'basic') return false;
@@ -264,115 +261,103 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return false;
   };
 
-  // Check if user can use custom tags
   const canUseCustomTags = async () => {
     if (!user) return false;
     
     const isSubscribed = await checkSubscription();
     if (!isSubscribed) return false;
     
-    const userPlan = user.subscription.plan;
-    
-    // Only standard and premium can use custom tags
-    return userPlan === 'standard' || userPlan === 'premium';
+    const userPlan = user.plan || 'basic';
+    return userPlan === 'premium';
   };
 
-  // Check if user can use AI search assistant
   const canUseAIAssistant = async () => {
     if (!user) return false;
     
     const isSubscribed = await checkSubscription();
     if (!isSubscribed) return false;
     
-    const userPlan = user.subscription.plan;
-    
-    // Only premium users can use AI assistant
+    const userPlan = user.plan || 'basic';
     return userPlan === 'premium';
   };
 
-  // Check if user can access priority support
   const canAccessPrioritySupport = async () => {
     if (!user) return false;
     
     const isSubscribed = await checkSubscription();
     if (!isSubscribed) return false;
     
-    const userPlan = user.subscription.plan;
-    
-    // Only premium users get priority support
+    const userPlan = user.plan || 'basic';
     return userPlan === 'premium';
   };
 
-  // Increment search count
   const incrementSearchCount = async () => {
     if (!user) return;
     
-    const currentCount = user.searchCount || 0;
-    const updatedUser = {
-      ...user,
-      searchCount: currentCount + 1
-    };
-    
-    // Update user in localStorage
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    
-    // In a real app, would update the count in the backend
+    try {
+      await axios.post('/api/v1/user/increment-search-count');
+      setUser(prev => prev ? { ...prev, searchCount: (prev.searchCount || 0) + 1 } : null);
+    } catch (err) {
+      console.error('Error incrementing search count', err);
+    }
   };
 
-  // Increment competitor analysis count
   const incrementCompetitorAnalysisCount = async () => {
     if (!user) return;
     
-    const currentCount = user.competitorAnalysisCount || 0;
-    const updatedUser = {
-      ...user,
-      competitorAnalysisCount: currentCount + 1
-    };
-    
-    // Update user in localStorage
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    
-    // In a real app, would update the count in the backend
+    try {
+      await axios.post('/api/v1/user/increment-analysis-count');
+      setUser(prev => prev ? { ...prev, competitorAnalysisCount: (prev.competitorAnalysisCount || 0) + 1 } : null);
+    } catch (err) {
+      console.error('Error incrementing competitor analysis count', err);
+    }
   };
 
-  // Increment export count
   const incrementExportCount = async () => {
     if (!user) return;
     
-    const currentCount = user.exportCount || 0;
-    const updatedUser = {
-      ...user,
-      exportCount: currentCount + 1
-    };
-    
-    // Update user in localStorage
-    localStorage.setItem('user', JSON.stringify(updatedUser));
-    setUser(updatedUser);
-    
-    // In a real app, would update the count in the backend
+    try {
+      await axios.post('/api/v1/user/increment-export-count');
+      setUser(prev => prev ? { ...prev, exportCount: (prev.exportCount || 0) + 1 } : null);
+    } catch (err) {
+      console.error('Error incrementing export count', err);
+    }
   };
 
-  const value = {
-    user,
-    loading,
-    error,
-    login,
-    logout,
-    signup,
-    checkSubscription,
-    canPerformRankingSearch,
-    canViewCompetitorAnalysis,
-    canExportCSV,
-    canSaveSearchHistory,
-    canUseCustomTags,
-    canUseAIAssistant,
-    canAccessPrioritySupport,
-    incrementSearchCount,
-    incrementCompetitorAnalysisCount,
-    incrementExportCount
+  const updateUserPlan = async (plan: string) => {
+    if (!user) return;
+    
+    try {
+      await axios.post('/api/v1/user/update-plan', { plan });
+      setUser(prev => prev ? { ...prev, plan } : null);
+    } catch (err) {
+      console.error('Error updating user plan', err);
+      throw new Error('Failed to update plan');
+    }
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      error,
+      login,
+      logout,
+      signup,
+      checkSubscription,
+      canPerformRankingSearch,
+      canViewCompetitorAnalysis,
+      canExportCSV,
+      canSaveSearchHistory,
+      canUseCustomTags,
+      canUseAIAssistant,
+      canAccessPrioritySupport,
+      incrementSearchCount,
+      incrementCompetitorAnalysisCount,
+      incrementExportCount,
+      updateUserPlan,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }; 

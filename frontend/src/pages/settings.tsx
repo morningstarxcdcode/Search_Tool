@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 import SettingsSidebar from '@/components/settings/SettingsSidebar';
+import axios from 'axios';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -73,7 +74,6 @@ const SettingsPage = () => {
   const [profileData, setProfileData] = useState({
     name: '',
     email: '',
-    companyName: '',
     phoneNumber: '',
   });
   
@@ -99,30 +99,6 @@ const SettingsPage = () => {
   useEffect(() => {
     const checkAuth = async () => {
       if (!loading) {
-        // Comment out the entire redirect logic
-        /*
-        if (!user) {
-          router.push('/login');
-        } else {
-          const isSubscribed = await checkSubscription();
-          setHasSubscription(isSubscribed);
-
-          if (!isSubscribed) {
-            router.push('/subscription');
-          } else {
-            // Populate form data with user info once we have it
-            if (user) {
-              setProfileData({
-                name: user.name || '',
-                email: user.email || '',
-                companyName: user.companyName || '',
-                phoneNumber: user.phoneNumber || '',
-              });
-            }
-          }
-        }
-        */
-        
         // New simplified logic without redirects
         if (user) {
           const isSubscribed = await checkSubscription();
@@ -131,7 +107,6 @@ const SettingsPage = () => {
           setProfileData({
             name: user.name || '',
             email: user.email || '',
-            companyName: user.companyName || '',
             phoneNumber: user.phoneNumber || '',
           });
         }
@@ -184,15 +159,16 @@ const SettingsPage = () => {
     setSaveError('');
     
     // Simulate API call
-    setTimeout(() => {
-      setIsSaving(false);
-      setSaveSuccess(true);
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setSaveSuccess(false);
-      }, 3000);
-    }, 1000);
+    axios.patch('/api/v1/auth/me', profileData)
+      .then(() => {
+        setSaveSuccess(true);
+      })
+      .catch((error) => {
+        setSaveError(error.message || '設定の保存に失敗しました。');
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
   };
 
   // Loading state
@@ -266,16 +242,6 @@ const SettingsPage = () => {
                       name="email"
                       type="email"
                       value={profileData.email}
-                      onChange={handleProfileChange}
-                      variant="outlined"
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="会社名"
-                      name="companyName"
-                      value={profileData.companyName}
                       onChange={handleProfileChange}
                       variant="outlined"
                     />

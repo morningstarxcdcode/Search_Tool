@@ -31,6 +31,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Fade,
+  Zoom,
+  Tooltip,
+  alpha,
 } from '@mui/material';
 import {
   GetApp as GetAppIcon,
@@ -39,8 +43,19 @@ import {
   KeyboardArrowUp as KeyboardArrowUpIcon,
   KeyboardArrowDown as KeyboardArrowDownIcon,
   EmojiEvents as EmojiEventsIcon,
+  FilterList as FilterListIcon,
+  Search as SearchIcon,
+  Info as InfoIcon,
+  Star as StarIcon,
+  StarBorder as StarBorderIcon,
+  Favorite as FavoriteIcon,
+  FavoriteBorder as FavoriteBorderIcon,
+  Share as ShareIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
+import axios from 'axios';
+import Image from 'next/image';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -110,129 +125,19 @@ const RankBadge: React.FC<RankBadgeProps> = ({ rank }) => {
   );
 };
 
-// Mock ranking data
-const mockRankings = [
-  {
-    id: '1',
-    rank: 1,
-    title: 'ワイヤレスイヤホン Bluetooth 5.2 ノイズキャンセリング機能付き 防水',
-    category: '家電',
-    price: 3200,
-    soldCount: 145,
-    revenue: 464000,
-    competition: 12,
-    trendChange: '+12%',
-    isImport: true,
-  },
-  {
-    id: '2',
-    rank: 2,
-    title: 'フェイシャルマスク 保湿 美容液 エッセンス 毛穴ケア 20枚入り 韓国コスメ',
-    category: '美容',
-    price: 1200,
-    soldCount: 132,
-    revenue: 158400,
-    competition: 18,
-    trendChange: '+22%',
-    isImport: true,
-  },
-  {
-    id: '3',
-    rank: 3,
-    title: 'スマートウォッチ 多機能 心拍数 血圧 歩数計 GPS 連携 防水 睡眠モニター',
-    category: '家電',
-    price: 4980,
-    soldCount: 98,
-    revenue: 488040,
-    competition: 15,
-    trendChange: '+8%',
-    isImport: true,
-  },
-  {
-    id: '4',
-    rank: 4,
-    title: 'ミニ加湿器 USB充電式 卓上 静音 LEDライト付き オフィス 寝室用',
-    category: 'ホーム',
-    price: 1980,
-    soldCount: 87,
-    revenue: 172260,
-    competition: 9,
-    trendChange: '+18%',
-    isImport: true,
-  },
-  {
-    id: '5',
-    rank: 5,
-    title: '折りたたみ傘 自動開閉 軽量 コンパクト 撥水 耐風 晴雨兼用 UV対策',
-    category: '日用品',
-    price: 1450,
-    soldCount: 84,
-    revenue: 121800,
-    competition: 11,
-    trendChange: '+15%',
-    isImport: true,
-  },
-  {
-    id: '6',
-    rank: 6,
-    title: 'ポータブル充電器 大容量 10000mAh USB-C 急速充電 薄型 軽量 2ポート',
-    category: '家電',
-    price: 2500,
-    soldCount: 76,
-    revenue: 190000,
-    competition: 14,
-    trendChange: '+5%',
-    isImport: true,
-  },
-  {
-    id: '7',
-    rank: 7,
-    title: 'LEDリングライト 自撮り用 10インチ 3色モード 10段階調光 三脚スタンド付き',
-    category: '家電',
-    price: 2680,
-    soldCount: 68,
-    revenue: 182240,
-    competition: 8,
-    trendChange: '+25%',
-    isImport: true,
-  },
-  {
-    id: '8',
-    rank: 8,
-    title: 'ヘアドライヤー 大風量 マイナスイオン 速乾 冷温風 折りたたみ 軽量',
-    category: '美容',
-    price: 3500,
-    soldCount: 65,
-    revenue: 227500,
-    competition: 10,
-    trendChange: '+7%',
-    isImport: true,
-  },
-  {
-    id: '9',
-    rank: 9,
-    title: 'ワイヤレス充電器 Qi対応 急速充電 スタンド型 iPhone Android対応',
-    category: '家電',
-    price: 2200,
-    soldCount: 62,
-    revenue: 136400,
-    competition: 13,
-    trendChange: '+10%',
-    isImport: true,
-  },
-  {
-    id: '10',
-    rank: 10,
-    title: 'スマホスタンド 卓上 角度調整可能 滑り止め アルミ製 折りたたみ式',
-    category: 'スマホアクセサリー',
-    price: 980,
-    soldCount: 58,
-    revenue: 56840,
-    competition: 7,
-    trendChange: '+14%',
-    isImport: true,
-  },
-];
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  brand: string;
+  condition: string;
+  category: string;
+  image_url: string;
+  seller_name: string;
+  lastSoldDate: string;
+  description: string;
+  import: string;
+}
 
 const RankingsPage = () => {
   const { user, loading, checkSubscription, canPerformRankingSearch } = useAuth();
@@ -244,7 +149,6 @@ const RankingsPage = () => {
   const [period, setPeriod] = useState('30days');
   const [sortBy, setSortBy] = useState('sold');
   const [isLoading, setIsLoading] = useState(false);
-  const [rankings, setRankings] = useState<any[]>(mockRankings);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -252,6 +156,9 @@ const RankingsPage = () => {
   const [searchCount, setSearchCount] = useState(0);
   const [userPlan, setUserPlan] = useState('');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
 
   // Check if user is logged in and has active subscription
   useEffect(() => {
@@ -262,6 +169,7 @@ const RankingsPage = () => {
         } else {
           const isSubscribed = await checkSubscription();
           setHasSubscription(isSubscribed);
+          setUserPlan(user.plan || 'basic');
 
           if (!isSubscribed) {
             router.push('/subscription');
@@ -273,24 +181,6 @@ const RankingsPage = () => {
     checkAuth();
   }, [loading, user, router, checkSubscription]);
 
-  // Check if user can perform search
-  useEffect(() => {
-    const checkSearchPermission = async () => {
-      if (user) {
-        const canSearch = await canPerformRankingSearch();
-        setCanSearch(canSearch);
-        
-        const plan = await checkSubscription();
-        setUserPlan(typeof plan === 'string' ? plan : '');
-        
-        // In a real app, this would be fetched from the backend
-        setSearchCount(user.searchCount || 0);
-      }
-    };
-    
-    checkSearchPermission();
-  }, [user, canPerformRankingSearch, checkSubscription]);
-
   // Handle filter changes
   useEffect(() => {
     if (user) {
@@ -298,53 +188,20 @@ const RankingsPage = () => {
     }
   }, [category, period, sortBy, user]);
 
-  // Mock API call to fetch rankings
-  const fetchRankings = () => {
-    // Check if user can perform search based on their plan
-    if (!canSearch) {
-      setShowUpgradeModal(true);
-      return;
-    }
+  // Fetch rankings from API
+  const fetchRankings = async () => {
+    if (!user) return;
     
     setIsLoading(true);
     
-    // In a real app, increment the search count in the backend
-    setSearchCount(prev => prev + 1);
-    
-    // Simulate API delay
-    setTimeout(() => {
-      // Apply filters
-      let filteredRankings = [...mockRankings];
-      
-      if (category !== 'all') {
-        filteredRankings = filteredRankings.filter(item => item.category === category);
-      }
-      
-      // Apply sorting
-      filteredRankings.sort((a, b) => {
-        switch (sortBy) {
-          case 'sold':
-            return b.soldCount - a.soldCount;
-          case 'revenue':
-            return b.revenue - a.revenue;
-          case 'price_high':
-            return b.price - a.price;
-          case 'price_low':
-            return a.price - b.price;
-          default:
-            return a.rank - b.rank;
-        }
-      });
-      
-      // Update rankings with new rank numbers
-      const updatedRankings = filteredRankings.map((item, index) => ({
-        ...item,
-        rank: index + 1
-      }));
-      
-      setRankings(updatedRankings);
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/products`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Error fetching rankings:', error);
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   // Handle tab change
@@ -352,9 +209,36 @@ const RankingsPage = () => {
     setTabValue(newValue);
   };
 
-  // Download rankings as CSV (mock function)
-  const handleDownloadCSV = () => {
-    alert('CSVダウンロード機能は実装予定です。');
+  // Handle description click
+  const handleDescriptionClick = (product: Product) => {
+    setSelectedProduct(product);
+    setShowDescriptionModal(true);
+  };
+
+  // Handle close modal
+  const handleCloseModal = () => {
+    setShowDescriptionModal(false);
+    setSelectedProduct(null);
+  };
+
+  // Download rankings as CSV
+  const handleDownloadCSV = async () => {
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/products/export`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `rankings-${new Date().toISOString()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      alert('CSVのダウンロードに失敗しました。');
+    }
   };
 
   // Handle scroll event for blur effect
@@ -380,360 +264,500 @@ const RankingsPage = () => {
         <title>売れ筋ランキング | Seller Navi</title>
       </Head>
       
-      <Container maxWidth="lg">
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" component="h1" gutterBottom fontWeight={600}>
-            売れ筋ランキング
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            各カテゴリーの売れ筋商品ランキングを確認できます。
-          </Typography>
-        </Box>
-        
-        {/* Filters Card */}
-        <Card sx={{ mb: 4 }}>
-          <CardContent>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={3}>
-                <TextField
-                  select
-                  fullWidth
-                  label="カテゴリー"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  size="small"
-                >
-                  <MenuItem value="all">すべて</MenuItem>
-                  <MenuItem value="家電">家電</MenuItem>
-                  <MenuItem value="美容">美容</MenuItem>
-                  <MenuItem value="ホーム">ホーム</MenuItem>
-                  <MenuItem value="日用品">日用品</MenuItem>
-                  <MenuItem value="スマホアクセサリー">スマホアクセサリー</MenuItem>
-                </TextField>
-              </Grid>
-              
-              <Grid item xs={12} md={3}>
-                <TextField
-                  select
-                  fullWidth
-                  label="期間"
-                  value={period}
-                  onChange={(e) => setPeriod(e.target.value)}
-                  size="small"
-                >
-                  <MenuItem value="30days">過去30日</MenuItem>
-                  <MenuItem value="60days">過去60日</MenuItem>
-                  <MenuItem value="90days">過去90日</MenuItem>
-                </TextField>
-              </Grid>
-              
-              <Grid item xs={12} md={3}>
-                <TextField
-                  select
-                  fullWidth
-                  label="並び替え"
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <SortIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                    ),
+      <Box sx={{ 
+        background: 'linear-gradient(180deg, #f5f7fa 0%, #ffffff 100%)',
+        minHeight: '100vh',
+        py: 4
+      }}>
+        <Container maxWidth="lg">
+          <Fade in timeout={800}>
+            <Box>
+              <Box sx={{ mb: 6, textAlign: 'center' }}>
+                <Typography 
+                  variant="h3" 
+                  component="h1" 
+                  gutterBottom 
+                  fontWeight={700}
+                  sx={{
+                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                    backgroundClip: 'text',
+                    textFillColor: 'transparent',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                   }}
                 >
-                  <MenuItem value="sold">売上数（多い順）</MenuItem>
-                  <MenuItem value="revenue">売上金額（多い順）</MenuItem>
-                  <MenuItem value="price_high">価格（高い順）</MenuItem>
-                  <MenuItem value="price_low">価格（安い順）</MenuItem>
-                </TextField>
-              </Grid>
-              
-              <Grid item xs={12} md={3}>
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  color="primary"
-                  startIcon={<GetAppIcon />}
-                  onClick={handleDownloadCSV}
-                  sx={{ height: '40px' }}
+                  売れ筋ランキング
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  color="text.secondary"
+                  sx={{ maxWidth: 600, mx: 'auto', mb: 4 }}
                 >
-                  CSVダウンロード
-                </Button>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-        
-        {/* Add a subscription limit indicator in the UI, right after the filters card */}
-        {userPlan && (
-          <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="body2" color="text.secondary">
-              {userPlan === 'basic' && `ランキング検索: ${searchCount}/3 (今月)`}
-              {userPlan === 'standard' && `ランキング検索: ${searchCount}/50 (今月)`}
-              {userPlan === 'premium' && 'ランキング検索: 無制限'}
-            </Typography>
-            {userPlan !== 'premium' && (
-              <Button 
-                size="small" 
-                color="primary" 
-                onClick={() => router.push('/subscription')}
-              >
-                プランをアップグレード
-              </Button>
-            )}
-          </Box>
-        )}
-        
-        {/* Tabs for different period views */}
-        <Box sx={{ mb: 2 }}>
-          <Tabs
-            value={tabValue}
-            onChange={handleTabChange}
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              '& .MuiTab-root': {
-                minWidth: 100,
-                fontWeight: 600,
-              },
-            }}
-          >
-            <Tab label="今日のランキング" />
-            <Tab label="週間ランキング" />
-            <Tab label="月間ランキング" />
-          </Tabs>
-        </Box>
-        
-        {/* Rankings Table */}
-        <TabPanel value={tabValue} index={0}>
-          <Card>
-            <CardContent sx={{ p: 0 }}>
-              {isLoading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                  <CircularProgress />
-                </Box>
-              ) : (
-                <TableContainer 
-                  component={Paper} 
+                  各カテゴリーの売れ筋商品ランキングを確認できます。
+                  市場動向を把握し、最適な商品選定にお役立てください。
+                </Typography>
+              </Box>
+              
+              {/* Filters Card */}
+              <Zoom in timeout={1000}>
+                <Card 
                   sx={{ 
-                    boxShadow: 'none',
-                    maxHeight: '70vh',
-                    overflow: 'auto',
-                    position: 'relative'
+                    mb: 4,
+                    borderRadius: 2,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
                   }}
-                  ref={tableContainerRef}
-                  onScroll={handleScroll}
                 >
-                  <Table sx={{ minWidth: 700 }}>
-                    <TableHead 
-                      sx={{ 
-                        backgroundColor: isScrolled ? 'rgba(245, 245, 245, 0.8)' : '#f5f5f5',
-                        position: 'sticky',
-                        top: 0,
-                        zIndex: 10,
-                        backdropFilter: isScrolled ? 'blur(8px)' : 'none',
-                        transition: 'all 0.3s ease',
-                        boxShadow: isScrolled ? '0 4px 12px rgba(0,0,0,0.05)' : 'none',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          left: 0,
-                          bottom: 0,
-                          width: '100%',
-                          borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
-                        }
-                      }}
-                    >
-                      <TableRow>
-                        <TableCell sx={{ fontWeight: 600, width: '60px', whiteSpace: 'nowrap', padding: '12px 16px' }}>順位</TableCell>
-                        <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', padding: '12px 16px' }}>商品名</TableCell>
-                        <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap', padding: '12px 16px' }}>カテゴリー</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, whiteSpace: 'nowrap', padding: '12px 16px' }}>価格</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, whiteSpace: 'nowrap', padding: '12px 16px', minWidth: '100px' }}>
-                          売上数
-                          <IconButton size="small" onClick={() => setSortBy('sold')} sx={{ ml: 0.5 }}>
-                            {sortBy === 'sold' ? (
-                              <KeyboardArrowDownIcon fontSize="small" color="primary" />
-                            ) : (
-                              <KeyboardArrowUpIcon fontSize="small" />
-                            )}
-                          </IconButton>
-                        </TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, whiteSpace: 'nowrap', padding: '12px 16px', minWidth: '120px' }}>
-                          売上金額
-                          <IconButton size="small" onClick={() => setSortBy('revenue')} sx={{ ml: 0.5 }}>
-                            {sortBy === 'revenue' ? (
-                              <KeyboardArrowDownIcon fontSize="small" color="primary" />
-                            ) : (
-                              <KeyboardArrowUpIcon fontSize="small" />
-                            )}
-                          </IconButton>
-                        </TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 600, whiteSpace: 'nowrap', padding: '12px 16px' }}>競合数</TableCell>
-                        <TableCell align="center" sx={{ fontWeight: 600, whiteSpace: 'nowrap', padding: '12px 16px' }}>トレンド</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {rankings.map((row) => (
-                        <TableRow
-                          key={row.id}
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                      <FilterListIcon color="primary" sx={{ mr: 1 }} />
+                      <Typography variant="h6" fontWeight={600}>
+                        フィルター
+                      </Typography>
+                    </Box>
+                    <Grid container spacing={3} alignItems="center">
+                      <Grid item xs={12} md={3}>
+                        <TextField
+                          select
+                          fullWidth
+                          label="カテゴリー"
+                          value={category}
+                          onChange={(e) => setCategory(e.target.value)}
+                          size="small"
                           sx={{
-                            '&:last-child td, &:last-child th': { border: 0 },
-                            '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' },
-                            backgroundColor: row.rank <= 3 ? 'rgba(255, 204, 0, 0.05)' : 'inherit',
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 2,
+                              backgroundColor: 'white',
+                            }
                           }}
                         >
-                          <TableCell width="60">
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <RankBadge rank={row.rank} />
-                            </Box>
-                          </TableCell>
-                          <TableCell sx={{ padding: '12px 16px' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Typography variant="body2" fontWeight={row.rank <= 3 ? 600 : 400}>
-                                {row.title}
-                              </Typography>
-                              {row.isImport && (
-                                <Chip
-                                  label="輸入"
-                                  size="small"
-                                  color="secondary"
-                                  variant="outlined"
-                                  sx={{ ml: 1, height: 20, fontSize: '0.625rem' }}
-                                />
-                              )}
-                            </Box>
-                          </TableCell>
-                          <TableCell sx={{ padding: '12px 16px' }}>
-                            <Chip
-                              label={row.category}
-                              size="small"
-                              sx={{
-                                backgroundColor:
-                                  row.category === '家電' ? 'rgba(33, 150, 243, 0.1)' :
-                                  row.category === '美容' ? 'rgba(233, 30, 99, 0.1)' :
-                                  row.category === 'ホーム' ? 'rgba(76, 175, 80, 0.1)' :
-                                  row.category === '日用品' ? 'rgba(255, 152, 0, 0.1)' :
-                                  'rgba(156, 39, 176, 0.1)',
-                                color:
-                                  row.category === '家電' ? 'info.main' :
-                                  row.category === '美容' ? 'error.main' :
-                                  row.category === 'ホーム' ? 'success.main' :
-                                  row.category === '日用品' ? 'warning.main' :
-                                  'secondary.main',
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell align="right" sx={{ padding: '12px 16px' }}>¥{row.price.toLocaleString()}</TableCell>
-                          <TableCell align="right" sx={{ padding: '12px 16px', fontWeight: 600 }}>{row.soldCount}</TableCell>
-                          <TableCell align="right" sx={{ padding: '12px 16px' }}>¥{row.revenue.toLocaleString()}</TableCell>
-                          <TableCell align="center" sx={{ padding: '12px 16px' }}>{row.competition}</TableCell>
-                          <TableCell align="center" sx={{ padding: '12px 16px' }}>
-                            <Chip
-                              label={row.trendChange}
-                              size="small"
-                              color="success"
-                              sx={{ height: 24, fontSize: '0.75rem' }}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </CardContent>
-          </Card>
-        </TabPanel>
-        
-        <TabPanel value={tabValue} index={1}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center', py: 6 }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                週間ランキングは準備中です
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                もうしばらくお待ちください。
-              </Typography>
-            </CardContent>
-          </Card>
-        </TabPanel>
-        
-        <TabPanel value={tabValue} index={2}>
-          <Card>
-            <CardContent sx={{ textAlign: 'center', py: 6 }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                月間ランキングは準備中です
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                もうしばらくお待ちください。
-              </Typography>
-            </CardContent>
-          </Card>
-        </TabPanel>
-        
-        {/* Insights Card */}
-        <Card sx={{ mt: 4 }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <TrendingUpIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6">市場インサイト</Typography>
+                          <MenuItem value="all">すべて</MenuItem>
+                          <MenuItem value="家電">家電</MenuItem>
+                          <MenuItem value="美容">美容</MenuItem>
+                          <MenuItem value="ホーム">ホーム</MenuItem>
+                          <MenuItem value="日用品">日用品</MenuItem>
+                          <MenuItem value="スマホアクセサリー">スマホアクセサリー</MenuItem>
+                        </TextField>
+                      </Grid>
+                      
+                      <Grid item xs={12} md={3}>
+                        <TextField
+                          select
+                          fullWidth
+                          label="期間"
+                          value={period}
+                          onChange={(e) => setPeriod(e.target.value)}
+                          size="small"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 2,
+                              backgroundColor: 'white',
+                            }
+                          }}
+                        >
+                          <MenuItem value="30days">過去30日</MenuItem>
+                          <MenuItem value="60days">過去60日</MenuItem>
+                          <MenuItem value="90days">過去90日</MenuItem>
+                        </TextField>
+                      </Grid>
+                      
+                      <Grid item xs={12} md={3}>
+                        <TextField
+                          select
+                          fullWidth
+                          label="並び替え"
+                          value={sortBy}
+                          onChange={(e) => setSortBy(e.target.value)}
+                          size="small"
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: 2,
+                              backgroundColor: 'white',
+                            }
+                          }}
+                          InputProps={{
+                            startAdornment: (
+                              <SortIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                            ),
+                          }}
+                        >
+                          <MenuItem value="price_asc">価格（安い順）</MenuItem>
+                          <MenuItem value="price_desc">価格（高い順）</MenuItem>
+                          <MenuItem value="date_desc">出品日（新しい順）</MenuItem>
+                          <MenuItem value="date_asc">出品日（古い順）</MenuItem>
+                        </TextField>
+                      </Grid>
+                      
+                      <Grid item xs={12} md={3}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="primary"
+                          startIcon={<GetAppIcon />}
+                          onClick={handleDownloadCSV}
+                          sx={{ 
+                            height: '40px',
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
+                            '&:hover': {
+                              boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
+                            }
+                          }}
+                        >
+                          CSVダウンロード
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+              </Zoom>
+              
+              {/* Rankings Table */}
+              <Fade in timeout={1200}>
+                <Card 
+                  sx={{ 
+                    borderRadius: 2,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+                    background: 'rgba(255, 255, 255, 0.9)',
+                    backdropFilter: 'blur(10px)',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <CardContent sx={{ p: 0 }}>
+                    {isLoading ? (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', p: 8 }}>
+                        <CircularProgress />
+                      </Box>
+                    ) : (
+                      <TableContainer 
+                        component={Paper} 
+                        sx={{ 
+                          boxShadow: 'none',
+                          maxHeight: '70vh',
+                          overflow: 'auto',
+                          position: 'relative',
+                          '&::-webkit-scrollbar': {
+                            width: '8px',
+                            height: '8px',
+                          },
+                          '&::-webkit-scrollbar-track': {
+                            background: '#f1f1f1',
+                            borderRadius: '4px',
+                          },
+                          '&::-webkit-scrollbar-thumb': {
+                            background: '#888',
+                            borderRadius: '4px',
+                            '&:hover': {
+                              background: '#555',
+                            },
+                          },
+                        }}
+                        ref={tableContainerRef}
+                        onScroll={handleScroll}
+                      >
+                        <Table sx={{ minWidth: 700 }}>
+                          <TableHead 
+                            sx={{ 
+                              backgroundColor: isScrolled ? 'rgba(255, 255, 255, 0.9)' : '#f8fafc',
+                              position: 'sticky',
+                              top: 0,
+                              zIndex: 10,
+                              backdropFilter: isScrolled ? 'blur(8px)' : 'none',
+                              transition: 'all 0.3s ease',
+                              boxShadow: isScrolled ? '0 4px 12px rgba(0,0,0,0.05)' : 'none',
+                            }}
+                          >
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600, width: '100px', py: 2 }}>商品画像</TableCell>
+                              <TableCell sx={{ fontWeight: 600, py: 2 }}>商品名</TableCell>
+                              <TableCell sx={{ fontWeight: 600, py: 2 }}>カテゴリー</TableCell>
+                              <TableCell align="right" sx={{ fontWeight: 600, py: 2 }}>価格</TableCell>
+                              <TableCell sx={{ fontWeight: 600, py: 2 }}>ブランド</TableCell>
+                              <TableCell sx={{ fontWeight: 600, py: 2 }}>状態</TableCell>
+                              <TableCell sx={{ fontWeight: 600, py: 2 }}>出品者</TableCell>
+                              <TableCell sx={{ fontWeight: 600, py: 2 }}>最終販売日</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {products.map((product) => (
+                              <TableRow
+                                key={product.id}
+                                onClick={() => handleDescriptionClick(product)}
+                                sx={{
+                                  cursor: 'pointer',
+                                  '&:last-child td, &:last-child th': { border: 0 },
+                                  '&:hover': { 
+                                    backgroundColor: 'rgba(33, 150, 243, 0.04)',
+                                    transition: 'background-color 0.2s ease',
+                                  },
+                                }}
+                              >
+                                <TableCell>
+                                  <Box 
+                                    sx={{ 
+                                      position: 'relative', 
+                                      width: 80, 
+                                      height: 80,
+                                      borderRadius: 2,
+                                      overflow: 'hidden',
+                                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                    }}
+                                  >
+                                    <Image
+                                      src={product.image_url}
+                                      alt={product.name}
+                                      fill
+                                      style={{ objectFit: 'cover' }}
+                                    />
+                                  </Box>
+                                </TableCell>
+                                <TableCell>
+                                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                                    <Typography variant="body2" fontWeight={500}>
+                                      {product.name}
+                                    </Typography>
+                                    {product.import && (
+                                      <Chip
+                                        label="輸入"
+                                        size="small"
+                                        color="secondary"
+                                        variant="outlined"
+                                        sx={{ 
+                                          height: 20, 
+                                          fontSize: '0.625rem',
+                                          borderRadius: 1,
+                                        }}
+                                      />
+                                    )}
+                                  </Box>
+                                </TableCell>
+                                <TableCell>
+                                  <Chip
+                                    label={product.category}
+                                    size="small"
+                                    sx={{
+                                      backgroundColor:
+                                        product.category === '家電' ? 'rgba(33, 150, 243, 0.1)' :
+                                        product.category === '美容' ? 'rgba(233, 30, 99, 0.1)' :
+                                        product.category === 'ホーム' ? 'rgba(76, 175, 80, 0.1)' :
+                                        product.category === '日用品' ? 'rgba(255, 152, 0, 0.1)' :
+                                        'rgba(156, 39, 176, 0.1)',
+                                      color:
+                                        product.category === '家電' ? 'info.main' :
+                                        product.category === '美容' ? 'error.main' :
+                                        product.category === 'ホーム' ? 'success.main' :
+                                        product.category === '日用品' ? 'warning.main' :
+                                        'secondary.main',
+                                      borderRadius: 1,
+                                    }}
+                                  />
+                                </TableCell>
+                                <TableCell align="right">
+                                  <Typography 
+                                    variant="body2" 
+                                    fontWeight={600} 
+                                    color="primary"
+                                    sx={{
+                                      background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                                      backgroundClip: 'text',
+                                      textFillColor: 'transparent',
+                                      WebkitBackgroundClip: 'text',
+                                      WebkitTextFillColor: 'transparent',
+                                    }}
+                                  >
+                                    ¥{product.price.toLocaleString()}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {product.brand}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Chip
+                                    label={product.condition}
+                                    size="small"
+                                    color="success"
+                                    variant="outlined"
+                                    sx={{ borderRadius: 1 }}
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Avatar 
+                                      sx={{ 
+                                        width: 24, 
+                                        height: 24,
+                                        fontSize: '0.75rem',
+                                        bgcolor: 'primary.main'
+                                      }}
+                                    >
+                                      {product.seller_name.charAt(0)}
+                                    </Avatar>
+                                    <Typography variant="body2">
+                                      {product.seller_name}
+                                    </Typography>
+                                  </Box>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2" color="text.secondary">
+                                    {product.lastSoldDate}
+                                  </Typography>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                  </CardContent>
+                </Card>
+              </Fade>
             </Box>
-            <Divider sx={{ mb: 2 }} />
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={4}>
-                <Typography variant="subtitle2" gutterBottom>
-                  トップカテゴリー
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  現在最も売れているカテゴリーは「家電」です。特にワイヤレスイヤホンとスマートウォッチが人気です。
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="subtitle2" gutterBottom>
-                  価格帯分析
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  売れている商品の平均価格は¥2,350です。¥1,000〜¥3,000の価格帯の商品が最も人気があります。
-                </Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="subtitle2" gutterBottom>
-                  競合状況
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  トップ10商品の平均競合数は10.7です。新規参入にはすき間市場を狙うことをおすすめします。
-                </Typography>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
+          </Fade>
 
-        {/* Add a modal to prompt users to upgrade when they reach their limit */}
-        <Dialog open={showUpgradeModal} onClose={() => setShowUpgradeModal(false)}>
-          <DialogTitle>検索回数制限に達しました</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {userPlan === 'basic' 
-                ? '基本プランでは月に3回までの検索が可能です。より多くの検索を行うには、スタンダードプランまたはプレミアムプランにアップグレードしてください。' 
-                : 'スタンダードプランでは月に50回までの検索が可能です。無制限の検索を行うには、プレミアムプランにアップグレードしてください。'}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowUpgradeModal(false)}>閉じる</Button>
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={() => {
-                setShowUpgradeModal(false);
-                router.push('/subscription');
-              }}
-            >
-              プランをアップグレード
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Container>
+          {/* Description Modal */}
+          <Dialog
+            open={showDescriptionModal}
+            onClose={handleCloseModal}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{
+              sx: {
+                borderRadius: 2,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              }
+            }}
+          >
+            {selectedProduct && (
+              <>
+                <DialogTitle>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Typography variant="h6" component="div" fontWeight={600}>
+                      {selectedProduct.name}
+                    </Typography>
+                    <IconButton onClick={handleCloseModal} size="small">
+                      <CloseIcon />
+                    </IconButton>
+                  </Box>
+                </DialogTitle>
+                <DialogContent>
+                  <Grid container spacing={4}>
+                    <Grid item xs={12} md={6}>
+                      <Box 
+                        sx={{ 
+                          position: 'relative', 
+                          width: '100%', 
+                          height: 400,
+                          borderRadius: 2,
+                          overflow: 'hidden',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                        }}
+                      >
+                        <Image
+                          src={selectedProduct.image_url}
+                          alt={selectedProduct.name}
+                          fill
+                          style={{ objectFit: 'cover' }}
+                        />
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle1" gutterBottom fontWeight={600}>
+                          商品説明
+                        </Typography>
+                        <Typography variant="body1" paragraph color="text.secondary">
+                          {selectedProduct.description}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle1" gutterBottom fontWeight={600}>
+                          商品詳細
+                        </Typography>
+                        <Grid container spacing={2}>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="text.secondary">
+                              ブランド
+                            </Typography>
+                            <Typography variant="body1" fontWeight={500}>
+                              {selectedProduct.brand}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="text.secondary">
+                              状態
+                            </Typography>
+                            <Typography variant="body1" fontWeight={500}>
+                              {selectedProduct.condition}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="text.secondary">
+                              カテゴリ
+                            </Typography>
+                            <Typography variant="body1" fontWeight={500}>
+                              {selectedProduct.category}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={6}>
+                            <Typography variant="body2" color="text.secondary">
+                              価格
+                            </Typography>
+                            <Typography 
+                              variant="body1" 
+                              fontWeight={600}
+                              sx={{
+                                background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                                backgroundClip: 'text',
+                                textFillColor: 'transparent',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                              }}
+                            >
+                              ¥{selectedProduct.price.toLocaleString()}
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<FavoriteBorderIcon />}
+                          sx={{ 
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
+                            '&:hover': {
+                              boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
+                            }
+                          }}
+                        >
+                          お気に入りに追加
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          startIcon={<ShareIcon />}
+                          sx={{ 
+                            borderRadius: 2,
+                            textTransform: 'none',
+                          }}
+                        >
+                          共有
+                        </Button>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </DialogContent>
+              </>
+            )}
+          </Dialog>
+        </Container>
+      </Box>
     </>
   );
 };

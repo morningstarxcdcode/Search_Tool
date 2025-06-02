@@ -19,11 +19,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/router';
+import axios from 'axios';
 
 const SignupPage = () => {
   const { signup, error, loading } = useAuth();
   const router = useRouter();
-  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,11 +53,13 @@ const SignupPage = () => {
     
     try {
       await signup(name, email, password);
+      router.push('/login');
     } catch (err) {
-      console.error('Signup error:', err);
+      console.error('Registration error:', err);
+      setFormError('アカウント登録に失敗しました。もう一度お試しください。');
     }
   };
-  
+
   return (
     <Box 
       sx={{ 

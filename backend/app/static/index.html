@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mercari Search Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .product-card {
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .product-image {
+            height: 200px;
+            object-fit: cover;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Mercari Search Tool</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <form id="searchForm" class="row g-3">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="keyword" placeholder="Search keyword" required>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control" id="minPrice" placeholder="Min price">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control" id="maxPrice" placeholder="Max price">
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="sortBy">
+                                    <option value="">Sort by</option>
+                                    <option value="price_asc">Price: Low to High</option>
+                                    <option value="price_desc">Price: High to Low</option>
+                                    <option value="created_desc">Newest First</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">Search</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading mt-4">
+            <div class="spinner-border loading-spinner text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Searching products...</p>
+        </div>
+
+        <div id="results" class="row mt-4">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const keyword = document.getElementById('keyword').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            // Show loading spinner
+            document.querySelector('.loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+            
+            try {
+                // Build query parameters
+                const params = new URLSearchParams({
+                    keyword: keyword
+                });
+                if (minPrice) params.append('min_price', minPrice);
+                if (maxPrice) params.append('max_price', maxPrice);
+                if (sortBy) params.append('sort_by', sortBy);
+                
+                // Make API request
+                const response = await fetch(`/api/v1/mercari/search?${params.toString()}`);
+                const products = await response.json();
+                
+                // Display results
+                const resultsDiv = document.getElementById('results');
+                if (products.length === 0) {
+                    resultsDiv.innerHTML = '<div class="col-12"><div class="alert alert-info">No products found</div></div>';
+                } else {
+                    resultsDiv.innerHTML = products.map(product => `
+                        <div class="col-md-4 mb-4">
+                            <div class="card product-card h-100">
+                                <img src="${product.image_url}" class="card-img-top product-image" alt="${product.name}">
+                                <div class="card-body">
+                                    <h5 class="card-title">${product.name}</h5>
+                                    <p class="card-text text-primary fw-bold">${product.price_text}</p>
+                                    ${product.brand ? `<p class="card-text"><small>Brand: ${product.brand}</small></p>` : ''}
+                                    ${product.condition ? `<p class="card-text"><small>Condition: ${product.condition}</small></p>` : ''}
+                                    ${product.seller_name ? `<p class="card-text"><small>Seller: ${product.seller_name}</small></p>` : ''}
+                                </div>
+                                <div class="card-footer bg-white">
+                                    <a href="${product.url}" target="_blank" class="btn btn-outline-primary w-100">View on Mercari</a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                document.getElementById('results').innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger">
+                            Error: ${error.message}
+                        </div>
+                    </div>
+                `;
+            } finally {
+                // Hide loading spinner
+                document.querySelector('.loading').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html> 
