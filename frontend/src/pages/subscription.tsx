@@ -20,12 +20,13 @@ import { Check as CheckIcon } from '@mui/icons-material';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
+import axios from 'axios';
 
 const plans = [
   {
     id: 'basic',
     name: 'ベーシック',
-    price: '2,980',
+    price: '0',
     period: '月額',
     features: [
       '基本リサーチ機能',
@@ -42,7 +43,7 @@ const plans = [
   {
     id: 'standard',
     name: 'スタンダード',
-    price: '4,980',
+    price: '2480',
     period: '月額',
     features: [
       'ベーシックプランの全機能',
@@ -59,7 +60,7 @@ const plans = [
   {
     id: 'premium',
     name: 'プレミアム',
-    price: '9,980',
+    price: '3480',
     period: '月額',
     features: [
       'スタンダードプランの全機能',
@@ -82,6 +83,8 @@ const SubscriptionPage = () => {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   
   const handlePlanSelect = (planId: string) => {
     setSelectedPlan(planId);
@@ -94,24 +97,17 @@ const SubscriptionPage = () => {
     
     // In a real app, this would be an API call to process the payment
     // For demo purposes, we'll just simulate a processing delay
-    setTimeout(() => {
       setIsProcessing(false);
       
       // Update user's subscription in localStorage for the demo
       if (user) {
-        const updatedUser = {
-          ...user,
-          subscription: {
-            ...user.subscription,
-            plan: selectedPlan
-          }
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        const response = await axios.patch(`${apiUrl}api/v1/auth/me`,{
+          plan : selectedPlan,
+        })
       }
       
       // Redirect to dashboard after successful subscription
-      router.push('/dashboard');
-    }, 2000);
+    router.push('/dashboard');
   };
   
   return (

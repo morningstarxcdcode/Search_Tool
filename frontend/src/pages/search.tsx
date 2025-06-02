@@ -42,99 +42,16 @@ import {
   SmartToy as SmartToyIcon,
   Psychology as PsychologyIcon,
   Lock as LockIcon,
-  Warning as WarningIcon
+  Warning as WarningIcon,
+  Description as DescriptionIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
 import ProductSaveButtons from '@/components/layout/ProductSaveButtons';
+import axios from 'axios';
 
 // Mock data for product results
-const mockProducts = [
-  {
-    id: 'p1',
-    title: 'ワイヤレスイヤホン Bluetooth 5.2 ノイズキャンセリング機能付き 防水',
-    price: 3200,
-    imageUrl: 'https://static.mercdn.net/item/detail/orig/photos/m82491234_1.jpg',
-    soldCount: 45,
-    revenueTotal: 144000,
-    seller: 'techgadgets2023',
-    category: '家電',
-    isImport: true,
-    competition: 8,
-    trendChange: '+12%',
-    lastSoldDate: '2025-04-15',
-  },
-  {
-    id: 'p2',
-    title: 'スマートウォッチ 多機能 心拍数 血圧 歩数計 GPS 連携 防水 睡眠モニター',
-    price: 4980,
-    imageUrl: 'https://static.mercdn.net/item/detail/orig/photos/m72381923_1.jpg',
-    soldCount: 38,
-    revenueTotal: 189240,
-    seller: 'gadgetworld',
-    category: '家電',
-    isImport: true,
-    competition: 12,
-    trendChange: '+8%',
-    lastSoldDate: '2025-04-16',
-  },
-  {
-    id: 'p3',
-    title: 'フェイシャルマスク 保湿 美容液 エッセンス 毛穴ケア 20枚入り 韓国コスメ',
-    price: 1200,
-    imageUrl: 'https://static.mercdn.net/item/detail/orig/photos/m92837465_1.jpg',
-    soldCount: 72,
-    revenueTotal: 86400,
-    seller: 'beautykorea',
-    category: '美容',
-    isImport: true,
-    competition: 15,
-    trendChange: '+22%',
-    lastSoldDate: '2025-04-20',
-  },
-  {
-    id: 'p4',
-    title: 'ポータブル充電器 大容量 10000mAh USB-C 急速充電 薄型 軽量 2ポート',
-    price: 2500,
-    imageUrl: 'https://static.mercdn.net/item/detail/orig/photos/m62937452_1.jpg',
-    soldCount: 29,
-    revenueTotal: 72500,
-    seller: 'tech_accessory',
-    category: '家電',
-    isImport: true,
-    competition: 10,
-    trendChange: '+5%',
-    lastSoldDate: '2025-04-14',
-  },
-  {
-    id: 'p5',
-    title: 'ミニ加湿器 USB充電式 卓上 静音 LEDライト付き オフィス 寝室用',
-    price: 1980,
-    imageUrl: 'https://static.mercdn.net/item/detail/orig/photos/m52836472_1.jpg',
-    soldCount: 53,
-    revenueTotal: 104940,
-    seller: 'homeliving',
-    category: 'ホーム',
-    isImport: true,
-    competition: 7,
-    trendChange: '+18%',
-    lastSoldDate: '2025-04-18',
-  },
-  {
-    id: 'p6',
-    title: '折りたたみ傘 自動開閉 軽量 コンパクト 撥水 耐風 晴雨兼用 UV対策',
-    price: 1450,
-    imageUrl: 'https://static.mercdn.net/item/detail/orig/photos/m92736451_1.jpg',
-    soldCount: 68,
-    revenueTotal: 98600,
-    seller: 'rainydays',
-    category: '日用品',
-    isImport: true,
-    competition: 9,
-    trendChange: '+15%',
-    lastSoldDate: '2025-04-19',
-  },
-];
+
 
 const SearchPage = () => {
   const { 
@@ -158,22 +75,22 @@ const SearchPage = () => {
   const [isImportOnly, setIsImportOnly] = useState(true);
   const [productType, setProductType] = useState('import');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [showBackdrop, setShowBackdrop] = useState(false);
   const [canExport, setCanExport] = useState(false);
   const [exportCount, setExportCount] = useState(0);
-  const [userPlan, setUserPlan] = useState('');
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [showAiSearch, setShowAiSearch] = useState(false);
   const [aiSearchKeywords, setAiSearchKeywords] = useState<string[]>([]);
   const [isAiSearching, setIsAiSearching] = useState(false);
   const [canUseAi, setCanUseAi] = useState(false);
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   const [searchCount, setSearchCount] = useState(0);
   const [searchLimit, setSearchLimit] = useState(Infinity);
+  const [results, setResults] = useState<any[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
 
-  const resultsPerPage = 5;
 
   // Check if user is logged in and has active subscription
   useEffect(() => {
@@ -203,10 +120,6 @@ const SearchPage = () => {
         const canExport = await canExportCSV();
         setCanExport(canExport);
         
-        // Get user plan
-        const plan = user.subscription.plan;
-        setUserPlan(plan);
-        
         // Get search count and limit
         setSearchCount(user.searchCount || 0);
         
@@ -216,7 +129,7 @@ const SearchPage = () => {
           'standard': 50,
           'premium': Infinity
         };
-        setSearchLimit(limits[plan as keyof typeof limits] || 0);
+        setSearchLimit(limits[user.plan as keyof typeof limits] || 0);
         
         // Check if user can use AI search
         const canUseAiAssistant = await canUseAIAssistant();
@@ -246,69 +159,29 @@ const SearchPage = () => {
     // Increment search count
     await incrementSearchCount();
     setSearchCount((prev) => prev + 1);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      // Apply mock filters
-      let results = [...mockProducts];
-      
-      if (searchTerm) {
-        results = results.filter(product => 
-          product.title.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-      
-      if (category !== 'all') {
-        results = results.filter(product => product.category === category);
-      }
-      
-      // Filter by product type (import or regular)
-      if (productType === 'import') {
-        results = results.filter(product => product.isImport);
-      } else if (productType === 'regular') {
-        results = results.filter(product => !product.isImport);
-      }
-      
-      if (minPrice) {
-        results = results.filter(product => product.price >= parseInt(minPrice));
-      }
-      
-      if (maxPrice) {
-        results = results.filter(product => product.price <= parseInt(maxPrice));
-      }
-      
-      // Sort results
-      results.sort((a, b) => {
-        if (sortBy === 'price_asc') {
-          return a.price - b.price;
-        } else if (sortBy === 'price_desc') {
-          return b.price - a.price;
-        } else if (sortBy === 'revenue') {
-          return b.revenueTotal - a.revenueTotal;
-        } else {
-          // Default: soldCount
-          return b.soldCount - a.soldCount;
-        }
+    try {
+
+      const response = await axios.post(`http://localhost:8000/api/v1/search/search`, {
+        keyword: searchTerm,
+        // category: category,
+        // min_price: minPrice,
+        // max_price: maxPrice
       });
+      setResults(response.data.results);
+      console.log(response.data.results);
       
-      setSearchResults(results);
-      setPage(1);
-      setIsSearching(false);
-      setShowBackdrop(false);
-    }, 1500);
+          
+          setPage(1);
+          setIsSearching(false);
+          setShowBackdrop(false);
+    } catch (err) {
+      console.error('Search error:', err);
+      alert('検索に失敗しました。少し時間をおいてから再度試してください。');
+    }
+    
+ 
   };
 
-  // Handle page change
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Calculate paged results
-  const pagedResults = searchResults.slice(
-    (page - 1) * resultsPerPage,
-    page * resultsPerPage
-  );
 
   // Clear search filters
   const handleClearFilters = () => {
@@ -383,6 +256,18 @@ const SearchPage = () => {
       // Automatically run the search with enhanced terms
       handleSearch();
     }, 2000);
+  };
+
+  // Add handleDescriptionClick function
+  const handleDescriptionClick = (product: any) => {
+    setSelectedProduct(product);
+    setShowDescriptionModal(true);
+  };
+
+  // Add handleCloseModal function
+  const handleCloseModal = () => {
+    setShowDescriptionModal(false);
+    setSelectedProduct(null);
   };
 
   // If loading, show a loading indicator
@@ -667,7 +552,7 @@ const SearchPage = () => {
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6">
-                検索結果 {searchResults.length > 0 ? `(${searchResults.length}件)` : ''}
+                検索結果 {results.length > 0 ? `(${results.length}件)` : ''}
               </Typography>
               
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -687,7 +572,6 @@ const SearchPage = () => {
                   }}
                 >
                   <MenuItem value="soldCount">売上個数（多い順）</MenuItem>
-                  <MenuItem value="revenue">売上金額（多い順）</MenuItem>
                   <MenuItem value="price_asc">価格（安い順）</MenuItem>
                   <MenuItem value="price_desc">価格（高い順）</MenuItem>
                 </TextField>
@@ -698,21 +582,21 @@ const SearchPage = () => {
                   startIcon={<CloudDownloadIcon />}
                   onClick={handleDownloadCSV}
                   size="small"
-                  disabled={searchResults.length === 0 || !canExport || (userPlan === 'standard' && exportCount >= 5)}
+                  disabled={results.length === 0 || !canExport || (user.plan === 'standard' && exportCount >= 5)}
                   title={!canExport ? 'CSVエクスポートは上位プランでご利用いただけます' : 
-                         (userPlan === 'standard' && exportCount >= 5) ? '今月のCSVエクスポート回数の上限に達しました' : 
+                         (user.plan === 'standard' && exportCount >= 5) ? '今月のCSVエクスポート回数の上限に達しました' : 
                          'CSVでダウンロード'}
                 >
-                  CSV {userPlan === 'standard' && (
+                  CSV {user.plan === 'standard' && (
                     <Typography variant="caption" sx={{ ml: 0.5 }}>({5 - exportCount}/5)</Typography>
                   )}
                 </Button>
               </Box>
             </Box>
             
-            {searchResults.length > 0 ? (
+            {results.length > 0 ? (
               <>
-                {pagedResults.map((product) => (
+                {results.map((product) => (
                   <Card
                     key={product.id}
                     variant="outlined"
@@ -740,18 +624,7 @@ const SearchPage = () => {
                               }}
                             >
                               {/* Image would be rendered here in a real app */}
-                              <Box sx={{ 
-                                width: '100%', 
-                                height: '100%', 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center',
-                                bgcolor: 'grey.200'
-                              }}>
-                                <Typography variant="body2" color="text.secondary">
-                                  商品画像
-                                </Typography>
-                              </Box>
+                              <Image src={product.image_url} alt={product.name} fill />
                             </Box>
                             {product.isImport && (
                               <Chip
@@ -772,12 +645,12 @@ const SearchPage = () => {
                         <Grid item xs={12} sm={10}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap' }}>
                             <Typography variant="subtitle1" fontWeight={600} gutterBottom sx={{ flex: 1 }}>
-                              {product.title}
+                              {product.name}
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <ProductSaveButtons productId={product.id} productTitle={product.title} />
+                              <ProductSaveButtons productId={product.id} productTitle={product.name} />
                               <Chip
-                                label={product.category}
+                                label={product.import}
                                 size="small"
                                 sx={{
                                   backgroundColor:
@@ -802,53 +675,55 @@ const SearchPage = () => {
                                 価格
                               </Typography>
                               <Typography variant="h6" color="primary" fontWeight={600}>
-                                ¥{product.price.toLocaleString()}
+                                ¥{product.price}
                               </Typography>
                             </Grid>
                             
                             <Grid item xs={6} sm={3}>
                               <Typography variant="body2" color="text.secondary">
-                                売上数
+                              ブランド
                               </Typography>
                               <Typography variant="h6" fontWeight={600}>
-                                {product.soldCount}個
+                                {product.brand}
                               </Typography>
                             </Grid>
                             
                             <Grid item xs={6} sm={3}>
                               <Typography variant="body2" color="text.secondary">
-                                売上金額
+                              状態
                               </Typography>
                               <Typography variant="h6" fontWeight={600}>
-                                ¥{product.revenueTotal.toLocaleString()}
+                                {product.condition}
                               </Typography>
                             </Grid>
                             
                             <Grid item xs={6} sm={3}>
                               <Typography variant="body2" color="text.secondary">
-                                競合数
+                              カテゴリ
                               </Typography>
                               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Typography variant="h6" fontWeight={600}>
-                                  {product.competition}
+                                  {product.category}
                                 </Typography>
-                                <Chip
-                                  label={product.trendChange}
-                                  size="small"
-                                  color="success"
-                                  sx={{ ml: 1, height: 20, fontSize: '0.75rem' }}
-                                />
                               </Box>
                             </Grid>
                             
                             <Grid item xs={12}>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
                                 <Typography variant="body2" color="text.secondary">
-                                  出品者: {product.seller} • 最終販売日: {product.lastSoldDate}
+                                  出品者: {product.seller_name} • 最終販売日: {product.lastSoldDate}
                                 </Typography>
-                                <Button size="small" variant="outlined">
-                                  競合詳細
-                                </Button>
+                                <Box>
+                                  <Button
+                                    size="small"
+                                    variant="outlined"
+                                    startIcon={<DescriptionIcon />}
+                                    onClick={() => handleDescriptionClick(product)}
+                                    sx={{ mr: 1 }}
+                                  >
+                                    詳細
+                                  </Button>
+                                </Box>
                               </Box>
                             </Grid>
                           </Grid>
@@ -857,19 +732,6 @@ const SearchPage = () => {
                     </CardContent>
                   </Card>
                 ))}
-                
-                {/* Pagination */}
-                {searchResults.length > resultsPerPage && (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                    <Pagination
-                      count={Math.ceil(searchResults.length / resultsPerPage)}
-                      page={page}
-                      onChange={handlePageChange}
-                      color="primary"
-                      size="large"
-                    />
-                  </Box>
-                )}
               </>
             ) : (
               <Box sx={{ py: 8, textAlign: 'center' }}>
@@ -903,15 +765,14 @@ const SearchPage = () => {
             検索回数: {searchCount} / {searchLimit === Infinity ? '無制限' : searchLimit}
           </Typography>
           
-          {userPlan !== 'premium' && (
+         
             <Button 
               size="small" 
               variant="outlined" 
-              onClick={() => router.push('/subscription')}
+              onClick={() => handleSearch()}
             >
-              アップグレード
+              もっと見る
             </Button>
-          )}
         </Box>
 
         {/* Add AI Assistant button with proper permission check */}
@@ -945,12 +806,12 @@ const SearchPage = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {userPlan === 'basic' ? (
+            {user.plan === 'basic' ? (
               <>
                 ベーシックプランでは月に3回までの検索が可能です。上限に達しました。
                 より多くの検索をご希望の場合は、上位プランへのアップグレードをご検討ください。
               </>
-            ) : userPlan === 'standard' ? (
+            ) : user.plan === 'standard' ? (
               <>
                 スタンダードプランでは月に50回までの検索が可能です。上限に達しました。
                 無制限の検索をご希望の場合は、プレミアムプランへのアップグレードをご検討ください。
@@ -977,6 +838,92 @@ const SearchPage = () => {
             プランをアップグレード
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Add Description Modal */}
+      <Dialog
+        open={showDescriptionModal}
+        onClose={handleCloseModal}
+        maxWidth="md"
+        fullWidth
+      >
+        {selectedProduct && (
+          <>
+            <DialogTitle>
+              <Typography variant="h6" component="div">
+                {selectedProduct.name}
+              </Typography>
+            </DialogTitle>
+            <DialogContent>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ position: 'relative', width: '100%', height: 400 }}>
+                    <Image
+                      src={selectedProduct.image_url}
+                      alt={selectedProduct.name}
+                      fill
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      商品説明
+                    </Typography>
+                    <Typography variant="body1" paragraph>
+                      {selectedProduct.description}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      商品詳細
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          ブランド
+                        </Typography>
+                        <Typography variant="body1">
+                          {selectedProduct.brand}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          状態
+                        </Typography>
+                        <Typography variant="body1">
+                          {selectedProduct.condition}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          カテゴリ
+                        </Typography>
+                        <Typography variant="body1">
+                          {selectedProduct.category}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="text.secondary">
+                          価格
+                        </Typography>
+                        <Typography variant="body1" color="primary.main" fontWeight={600}>
+                          ¥{selectedProduct.price.toLocaleString()}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </Grid>
+              </Grid>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseModal}>
+                閉じる
+              </Button>
+            </DialogActions>
+          </>
+        )}
       </Dialog>
     </>
   );
