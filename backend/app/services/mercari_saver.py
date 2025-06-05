@@ -346,7 +346,11 @@ class FixedMercariScraper:
                 items = breadcrumb[0].find_all(['a', 'span', 'div'], recursive=True)
                 categories = [item.get_text(strip=True) for item in items if item.get_text(strip=True)]
                 if categories:
-                    category = ' > '.join(categories)
+                    # Get the second category (main category) if it exists
+                    if len(categories) >= 2:
+                        category = categories[1]  # Second item is the main category
+                    else:
+                        category = categories[0]  # Fallback to first item if only one exists
             # Fallback: try previous selectors
             if not category:
                 category_selectors = [
@@ -360,9 +364,12 @@ class FixedMercariScraper:
                     if found:
                         links = [link.get_text(strip=True) for link in found if link.get_text(strip=True)]
                         if links:
+                            # Get the second category if it exists
+                            if len(links) >= 2:
+                                category = links[1]
+                            else:
+                                category = links[0]
                             break
-                if links:
-                    category = ' > '.join(links)
             print(f"   Debug - Category found: {category}")
 
             # Extract condition

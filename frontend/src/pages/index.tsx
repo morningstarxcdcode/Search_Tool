@@ -39,17 +39,17 @@ const Home = () => {
     },
     {
       title: '高速検索',
-      description: ' 独自の技術により、検索結果を爆速で表示します。<br /> リサーチの時間を大幅に削減。',
+      description: ' 独自の技術により、検索結果を爆速で表示します。 リサーチの時間を大幅に削減。',
       icon: <SpeedIcon fontSize="large" color="primary" />,
     },
     {
       title: '中国輸入に特化',
-      description: 'インポート商品を自動<br />識別し、 競合分析も簡単<br />に行えます。',
+      description: 'インポート商品を自動識別し、 競合分析も簡単に行えます。',
       icon: <SearchIcon fontSize="large" color="primary" />,
     },
     {
       title: '時間とコストの節約',
-      description: 'リサーチ作業を効率化し、 より多くの時間を販売<br />戦略や未来への<br />投資に充てられます。',
+      description: 'リサーチ作業を効率化し、 より多くの時間を販売戦略や未来への投資に充てられます。',
       icon: <SavingsIcon fontSize="large" color="primary" />,
     },
   ];
@@ -250,7 +250,7 @@ const Home = () => {
             ))}
           </Grid>
           <Box sx={{ textAlign: 'center', mt: 4 }}>
-            <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 800, mx: 'auto' }}>
+            <Typography variant="h4" color="text.secondary" sx={{ maxWidth: 800, mx: 'auto' }}>
             だから「迷わない・続けられる・稼げる」
             </Typography>
           </Box>

@@ -413,6 +413,7 @@ const RankingsPage = () => {
                             }}
                           >
                             <TableRow>
+                              <TableCell sx={{ fontWeight: 600, width: '60px', py: 2 }}>順位</TableCell>
                               <TableCell sx={{ fontWeight: 600, width: '100px', py: 2 }}>商品画像</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>商品名</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>カテゴリー</TableCell>
@@ -420,7 +421,6 @@ const RankingsPage = () => {
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>ブランド</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>状態</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>出品者</TableCell>
-                              <TableCell sx={{ fontWeight: 600, py: 2 }}>売上数</TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
@@ -437,6 +437,26 @@ const RankingsPage = () => {
                                   },
                                 }}
                               >
+                                <TableCell>
+                                  <Box sx={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: '50%',
+                                    backgroundColor: index < 3 ? 
+                                      index === 0 ? 'gold' : 
+                                      index === 1 ? 'silver' : 
+                                      '#cd7f32' : 'transparent',
+                                    color: index < 3 ? 'white' : 'text.secondary',
+                                    fontWeight: 600,
+                                    fontSize: '0.875rem',
+                                    boxShadow: index < 3 ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
+                                  }}>
+                                    {index + 1}
+                                  </Box>
+                                </TableCell>
                                 <TableCell>
                                   <Box 
                                     sx={{ 
@@ -481,18 +501,6 @@ const RankingsPage = () => {
                                     label={product.category}
                                     size="small"
                                     sx={{
-                                      backgroundColor:
-                                        product.category === '家電' ? 'rgba(33, 150, 243, 0.1)' :
-                                        product.category === '美容' ? 'rgba(233, 30, 99, 0.1)' :
-                                        product.category === 'ホーム' ? 'rgba(76, 175, 80, 0.1)' :
-                                        product.category === '日用品' ? 'rgba(255, 152, 0, 0.1)' :
-                                        'rgba(156, 39, 176, 0.1)',
-                                      color:
-                                        product.category === '家電' ? 'info.main' :
-                                        product.category === '美容' ? 'error.main' :
-                                        product.category === 'ホーム' ? 'success.main' :
-                                        product.category === '日用品' ? 'warning.main' :
-                                        'secondary.main',
                                       borderRadius: 1,
                                     }}
                                   />
@@ -541,17 +549,6 @@ const RankingsPage = () => {
                                     </Avatar>
                                     <Typography variant="body2">
                                       {product.seller_name}
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <TrendingUpIcon 
-                                      fontSize="small" 
-                                      color={product.sold && product.sold > 0 ? 'success' : 'disabled'} 
-                                    />
-                                    <Typography variant="body2" color={product.sold && product.sold > 0 ? 'success.main' : 'text.secondary'}>
-                                      {product.sold || 0}
                                     </Typography>
                                   </Box>
                                 </TableCell>
