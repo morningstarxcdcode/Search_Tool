@@ -337,21 +337,21 @@ const RankingsPage = () => {
                             }
                             label="輸入品のみ"
                           />
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            startIcon={<GetAppIcon />}
-                            onClick={handleDownloadCSV}
-                            sx={{ 
-                              height: '40px',
-                              borderRadius: 2,
-                              textTransform: 'none',
-                              boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
-                              '&:hover': {
-                                boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
-                              }
-                            }}
-                          >
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<GetAppIcon />}
+                          onClick={handleDownloadCSV}
+                          sx={{ 
+                            height: '40px',
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
+                            '&:hover': {
+                              boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
+                            }
+                          }}
+                        >
                             CSV
                           </Button>
                           <Button
@@ -366,7 +366,7 @@ const RankingsPage = () => {
                             }}
                           >
                             更新
-                          </Button>
+                        </Button>
                         </Box>
                       </Grid>
                     </Grid>
