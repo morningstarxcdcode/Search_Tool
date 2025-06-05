@@ -404,11 +404,28 @@ const SearchPage = () => {
                       label="カテゴリー"
                     >
                       <MenuItem value="all">すべて</MenuItem>
-                      <MenuItem value="fashion">ファッション</MenuItem>
-                      <MenuItem value="electronics">家電・電子機器</MenuItem>
-                      <MenuItem value="hobby">ホビー・ゲーム</MenuItem>
-                      <MenuItem value="beauty">コスメ・美容</MenuItem>
-                      <MenuItem value="sports">スポーツ・アウトドア</MenuItem>
+                      <MenuItem value="ファッション">ファッション</MenuItem>
+                      <MenuItem value="ベビー・キッズ">ベビー・キッズ</MenuItem>
+                      <MenuItem value="ホビー・楽器・アート">ホビー・楽器・アート</MenuItem>
+                      <MenuItem value="チケット">チケット</MenuItem>
+                      <MenuItem value="本・雑誌・漫画">本・雑誌・漫画</MenuItem>
+                      <MenuItem value="生活家電・空調">生活家電・空調</MenuItem>
+                      <MenuItem value="ゲーム・おもちゃ・グッズ">ゲーム・おもちゃ・グッズ</MenuItem>
+                      <MenuItem value="アウトドア・釣り・旅行用品">アウトドア・釣り・旅行用品</MenuItem>
+                      <MenuItem value="コスメ・美容">コスメ・美容</MenuItem>
+                      <MenuItem value="食品・飲料・酒">食品・飲料・酒</MenuItem>
+                      <MenuItem value="スポーツ">スポーツ</MenuItem>
+                      <MenuItem value="ダイエット・健康">ダイエット・健康</MenuItem>
+                      <MenuItem value="家具・インテリア">家具・インテリア</MenuItem>
+                      <MenuItem value="ペット用品">ペット用品</MenuItem>
+                      <MenuItem value="DIY・工具">DIY・工具</MenuItem>
+                      <MenuItem value="フラワー・ガーデニング">フラワー・ガーデニング</MenuItem>
+                      <MenuItem value="ハンドメイド・手芸">ハンドメイド・手芸</MenuItem>
+                      <MenuItem value="車・バイク・自転車">車・バイク・自転車</MenuItem>
+                      <MenuItem value="CD・DVD・ブルーレイ">CD・DVD・ブルーレイ</MenuItem>
+                      <MenuItem value="キッチン・日用品・その他">キッチン・日用品・その他</MenuItem>
+                      <MenuItem value="スマホ・タブレット・パソコン">スマホ・タブレット・パソコン</MenuItem>
+                      <MenuItem value="テレビ・オーディオ・カメラ">テレビ・オーディオ・カメラ</MenuItem>
                     </TextField>
                   </FormControl>
                 </Grid>

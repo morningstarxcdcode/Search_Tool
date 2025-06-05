@@ -67,7 +67,6 @@ interface Product {
   id: string;
   name: string;
   price: number;
-  brand: string;
   condition: string;
   category: string;
   image_url: string;
@@ -272,11 +271,28 @@ const RankingsPage = () => {
                           }}
                         >
                           <MenuItem value="all">すべて</MenuItem>
-                          <MenuItem value="家電">家電</MenuItem>
-                          <MenuItem value="美容">美容</MenuItem>
-                          <MenuItem value="ホーム">ホーム</MenuItem>
-                          <MenuItem value="日用品">日用品</MenuItem>
-                          <MenuItem value="スマホアクセサリー">スマホアクセサリー</MenuItem>
+                          <MenuItem value="ファッション">ファッション</MenuItem>
+                          <MenuItem value="ベビー・キッズ">ベビー・キッズ</MenuItem>
+                          <MenuItem value="ホビー・楽器・アート">ホビー・楽器・アート</MenuItem>
+                          <MenuItem value="チケット">チケット</MenuItem>
+                          <MenuItem value="本・雑誌・漫画">本・雑誌・漫画</MenuItem>
+                          <MenuItem value="生活家電・空調">生活家電・空調</MenuItem>
+                          <MenuItem value="ゲーム・おもちゃ・グッズ">ゲーム・おもちゃ・グッズ</MenuItem>
+                          <MenuItem value="アウトドア・釣り・旅行用品">アウトドア・釣り・旅行用品</MenuItem>
+                          <MenuItem value="コスメ・美容">コスメ・美容</MenuItem>
+                          <MenuItem value="食品・飲料・酒">食品・飲料・酒</MenuItem>
+                          <MenuItem value="スポーツ">スポーツ</MenuItem>
+                          <MenuItem value="ダイエット・健康">ダイエット・健康</MenuItem>
+                          <MenuItem value="家具・インテリア">家具・インテリア</MenuItem>
+                          <MenuItem value="ペット用品">ペット用品</MenuItem>
+                          <MenuItem value="DIY・工具">DIY・工具</MenuItem>
+                          <MenuItem value="フラワー・ガーデニング">フラワー・ガーデニング</MenuItem>
+                          <MenuItem value="ハンドメイド・手芸">ハンドメイド・手芸</MenuItem>
+                          <MenuItem value="車・バイク・自転車">車・バイク・自転車</MenuItem>
+                          <MenuItem value="CD・DVD・ブルーレイ">CD・DVD・ブルーレイ</MenuItem>
+                          <MenuItem value="キッチン・日用品・その他">キッチン・日用品・その他</MenuItem>
+                          <MenuItem value="スマホ・タブレット・パソコン">スマホ・タブレット・パソコン</MenuItem>
+                          <MenuItem value="テレビ・オーディオ・カメラ">テレビ・オーディオ・カメラ</MenuItem>
                         </TextField>
                       </Grid>
                       
@@ -418,7 +434,6 @@ const RankingsPage = () => {
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>商品名</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>カテゴリー</TableCell>
                               <TableCell align="right" sx={{ fontWeight: 600, py: 2 }}>価格</TableCell>
-                              <TableCell sx={{ fontWeight: 600, py: 2 }}>ブランド</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>状態</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>出品者</TableCell>
                             </TableRow>
@@ -522,11 +537,6 @@ const RankingsPage = () => {
                                   </Typography>
                                 </TableCell>
                                 <TableCell>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {product.brand}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell>
                                   <Chip
                                     label={product.condition}
                                     size="small"
@@ -624,14 +634,6 @@ const RankingsPage = () => {
                           商品詳細
                         </Typography>
                         <Grid container spacing={2}>
-                          <Grid item xs={6}>
-                            <Typography variant="body2" color="text.secondary">
-                              ブランド
-                            </Typography>
-                            <Typography variant="body1" fontWeight={500}>
-                              {selectedProduct.brand}
-                            </Typography>
-                          </Grid>
                           <Grid item xs={6}>
                             <Typography variant="body2" color="text.secondary">
                               状態

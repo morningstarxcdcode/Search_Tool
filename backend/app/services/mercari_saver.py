@@ -356,7 +356,9 @@ class FixedMercariScraper:
                 category_selectors = [
                     'div[class*="merBreadcrumbItem"]',
                     'div[role="listitem"]',
-                    'a[href*="/search/category"]'
+                    'a[href*="/search/category"]',
+                    'span[data-testid="カテゴリ"]',
+                    'div:contains("カテゴリ") + div'
                 ]
                 links = []
                 for selector in category_selectors:
@@ -370,6 +372,24 @@ class FixedMercariScraper:
                             else:
                                 category = links[0]
                             break
+            # Additional fallback: try to find category in product details
+            if not category:
+                detail_selectors = [
+                    'div[data-testid="商品の詳細"]',
+                    'div[class*="product-details"]',
+                    'div[class*="item-details"]'
+                ]
+                for selector in detail_selectors:
+                    details = soup.select(selector)
+                    if details:
+                        for detail in details:
+                            text = detail.get_text(strip=True)
+                            if 'カテゴリ' in text:
+                                # Try to extract category after "カテゴリ"
+                                parts = text.split('カテゴリ')
+                                if len(parts) > 1:
+                                    category = parts[1].strip().split('\n')[0].strip()
+                                    break
             print(f"   Debug - Category found: {category}")
 
             # Extract condition

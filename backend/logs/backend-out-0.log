@@ -7189,3 +7189,242 @@ INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
 2025-06-05 21:47:51,358 - app.api.v1.products - INFO - Using filter query: {}
 2025-06-05 21:47:51,395 - app.api.v1.products - INFO - Found 60 products
 INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 22:00:44,178 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 22:00:44,180 - app.api.v1.products - INFO - Using filter query: {}
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 22:00:44,215 - app.api.v1.products - INFO - Found 60 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:06:32,799 - app.db.mongodb - INFO - Closed MongoDB connection
+2025-06-05 23:06:32,799 - app.db.mongodb - INFO - Closed MongoDB connection
+2025-06-05 23:06:32,799 - run - INFO - Disconnected from MongoDB
+2025-06-05 23:06:39,503 - app.db.mongodb - INFO - Created MongoDB indexes
+2025-06-05 23:06:39,503 - app.db.mongodb - INFO - Created MongoDB indexes
+2025-06-05 23:06:39,503 - app.db.mongodb - INFO - Connected to MongoDB
+2025-06-05 23:06:39,503 - app.db.mongodb - INFO - Connected to MongoDB
+2025-06-05 23:06:39,503 - run - INFO - Connected to MongoDB
+2025-06-05 23:35:20,853 - app.db.mongodb - INFO - Closed MongoDB connection
+2025-06-05 23:35:20,853 - app.db.mongodb - INFO - Closed MongoDB connection
+2025-06-05 23:35:20,853 - run - INFO - Disconnected from MongoDB
+2025-06-05 23:35:26,935 - app.db.mongodb - INFO - Created MongoDB indexes
+2025-06-05 23:35:26,935 - app.db.mongodb - INFO - Created MongoDB indexes
+2025-06-05 23:35:26,935 - app.db.mongodb - INFO - Connected to MongoDB
+2025-06-05 23:35:26,935 - app.db.mongodb - INFO - Connected to MongoDB
+2025-06-05 23:35:26,935 - run - INFO - Connected to MongoDB
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:35:57,434 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:35:57,436 - app.api.v1.products - INFO - Using filter query: {}
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:35:57,469 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:36:08,124 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:36:08,125 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:36:08,164 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+2025-06-05 23:37:31,608 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:37:31,609 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:37:31,644 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+2025-06-05 23:37:44,284 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:37:44,285 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:37:44,325 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+2025-06-05 23:37:45,110 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:37:45,111 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:37:45,146 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:38:03,990 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:38:03,991 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:38:04,024 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:38:07,722 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:38:07,723 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:38:07,771 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:38:14,677 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:38:14,679 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:38:14,722 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:38:20,304 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:38:20,305 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:38:20,342 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:38:24,170 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:38:24,172 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:38:24,216 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:43:08,220 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:43:08,222 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:43:08,268 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-05 23:43:09,047 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-05 23:43:09,048 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-05 23:43:09,084 - app.api.v1.products - INFO - Found 0 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+2025-06-06 00:11:41,720 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-06 00:11:41,722 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-06 00:11:41,771 - app.api.v1.products - INFO - Found 60 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+2025-06-06 00:11:41,880 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-06 00:11:41,881 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-06 00:11:41,916 - app.api.v1.products - INFO - Found 60 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+2025-06-06 00:11:56,213 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-06 00:11:56,216 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-06 00:11:56,262 - app.api.v1.products - INFO - Found 60 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
+2025-06-06 00:15:19,386 - app.db.mongodb - INFO - Closed MongoDB connection
+2025-06-06 00:15:19,386 - app.db.mongodb - INFO - Closed MongoDB connection
+2025-06-06 00:15:19,386 - run - INFO - Disconnected from MongoDB
+2025-06-06 00:15:26,460 - app.db.mongodb - INFO - Created MongoDB indexes
+2025-06-06 00:15:26,460 - app.db.mongodb - INFO - Created MongoDB indexes
+2025-06-06 00:15:26,460 - app.db.mongodb - INFO - Connected to MongoDB
+2025-06-06 00:15:26,460 - app.db.mongodb - INFO - Connected to MongoDB
+2025-06-06 00:15:26,460 - run - INFO - Connected to MongoDB
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+email='sakamoto@gmail.com' name='sakamoto' phone=None role='user' plan='premium' impo_noti=False trend_noti=False update_noti=False search_report=False pay_info=None id='683ee1de8a788e6a9e45dfdc' verify=None expires_in=None created_at=datetime.datetime(2025, 6, 3, 11, 51, 58, 924000) updated_at=datetime.datetime(2025, 6, 5, 12, 3, 2, 3000)
+INFO:     50.7.159.34:0 - "GET /api/v1/auth/me HTTP/1.1" 200 OK
+INFO:     50.7.159.34:0 - "GET /api/v1/products HTTP/1.1" 307 Temporary Redirect
+2025-06-06 00:15:29,718 - app.api.v1.products - INFO - Fetching products from MongoDB...
+2025-06-06 00:15:29,720 - app.api.v1.products - INFO - Using filter query: {}
+2025-06-06 00:15:29,781 - app.api.v1.products - INFO - Found 60 products
+INFO:     50.7.159.34:0 - "GET /api/v1/products/ HTTP/1.1" 200 OK
