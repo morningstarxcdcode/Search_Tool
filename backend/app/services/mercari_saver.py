@@ -572,7 +572,7 @@ async def main():
         mongo_client = AsyncIOMotorClient('mongodb://localhost:27017')
         
         # Use fixed limit of 35
-        limit = 5
+        limit = 60
         print(f"📦 Scraping {limit} products from ranking page")
         
         # Start scraping
