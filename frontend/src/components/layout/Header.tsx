@@ -99,37 +99,40 @@ const Header = () => {
             alt="Seller Navi Logo" 
             width={150} 
             height={50} 
-            style={{ objectFit: 'contain' }}
+            style={{ 
+              objectFit: 'contain',
+              maxWidth: '100%',
+              height: 'auto'
+            }}
           />
         </Box>
         <Divider />
         <List>
           {menuItems.map((item) => (
-            <ListItem 
-              button 
-              key={item.text} 
-              component={Link} 
-              href={item.href}
-              selected={isActive(item.href)}
-              onClick={handleDrawerToggle}
-              sx={{
-                bgcolor: isActive(item.href) ? 'rgba(0, 85, 255, 0.08)' : 'transparent',
-                '&:hover': {
-                  bgcolor: 'rgba(0, 85, 255, 0.12)',
-                },
-              }}
-            >
-              <ListItemIcon sx={{ color: isActive(item.href) ? 'primary.main' : 'inherit' }}>
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText 
-                primary={item.text} 
-                primaryTypographyProps={{
-                  color: isActive(item.href) ? 'primary.main' : 'inherit',
-                  fontWeight: isActive(item.href) ? 600 : 400,
+            <Link key={item.text} href={item.href} passHref legacyBehavior>
+              <ListItem 
+                button 
+                selected={isActive(item.href)}
+                onClick={handleDrawerToggle}
+                sx={{
+                  bgcolor: isActive(item.href) ? 'rgba(0, 85, 255, 0.08)' : 'transparent',
+                  '&:hover': {
+                    bgcolor: 'rgba(0, 85, 255, 0.12)',
+                  },
                 }}
-              />
-            </ListItem>
+              >
+                <ListItemIcon sx={{ color: isActive(item.href) ? 'primary.main' : 'inherit' }}>
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.text} 
+                  primaryTypographyProps={{
+                    color: isActive(item.href) ? 'primary.main' : 'inherit',
+                    fontWeight: isActive(item.href) ? 600 : 400,
+                  }}
+                />
+              </ListItem>
+            </Link>
           ))}
         </List>
         
@@ -184,9 +187,13 @@ const Header = () => {
                   <Image 
                     src="/logo.png" 
                     alt="Seller Navi Logo" 
-                    width={isMobile ? 120 : 150} 
-                    height={isMobile ? 40 : 50} 
-                    style={{ objectFit: 'contain' }}
+                    width={150} 
+                    height={50} 
+                    style={{ 
+                      objectFit: 'contain',
+                      maxWidth: '100%',
+                      height: 'auto'
+                    }}
                   />
                 </Box>
               </Link>
@@ -195,22 +202,21 @@ const Header = () => {
             {!isMobile && (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 {menuItems.map((item) => (
-                  <Button
-                    key={item.text}
-                    component={Link}
-                    href={item.href}
-                    color={isActive(item.href) ? 'primary' : 'inherit'}
-                    sx={{ 
-                      mx: 1,
-                      fontWeight: isActive(item.href) ? 600 : 400,
-                      '&:hover': {
-                        backgroundColor: 'rgba(0, 85, 255, 0.08)',
-                      }
-                    }}
-                    startIcon={item.icon}
-                  >
-                    {item.text}
-                  </Button>
+                  <Link key={item.text} href={item.href} passHref legacyBehavior>
+                    <Button
+                      color={isActive(item.href) ? 'primary' : 'inherit'}
+                      sx={{ 
+                        mx: 1,
+                        fontWeight: isActive(item.href) ? 600 : 400,
+                        '&:hover': {
+                          backgroundColor: 'rgba(0, 85, 255, 0.08)',
+                        }
+                      }}
+                      startIcon={item.icon}
+                    >
+                      {item.text}
+                    </Button>
+                  </Link>
                 ))}
               </Box>
             )}
@@ -260,18 +266,22 @@ const Header = () => {
                     transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                     anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                   >
-                    <MenuItem component={Link} href="/profile" onClick={handleMenuClose}>
-                      <ListItemIcon>
-                        <PersonIcon fontSize="small" />
-                      </ListItemIcon>
-                      プロフィール
-                    </MenuItem>
-                    <MenuItem component={Link} href="/settings" onClick={handleMenuClose}>
-                      <ListItemIcon>
-                        <SettingsIcon fontSize="small" />
-                      </ListItemIcon>
-                      設定
-                    </MenuItem>
+                    <Link href="/profile" passHref legacyBehavior>
+                      <MenuItem onClick={handleMenuClose}>
+                        <ListItemIcon>
+                          <PersonIcon fontSize="small" />
+                        </ListItemIcon>
+                        プロフィール
+                      </MenuItem>
+                    </Link>
+                    <Link href="/settings" passHref legacyBehavior>
+                      <MenuItem onClick={handleMenuClose}>
+                        <ListItemIcon>
+                          <SettingsIcon fontSize="small" />
+                        </ListItemIcon>
+                        設定
+                      </MenuItem>
+                    </Link>
                     <Divider />
                     <MenuItem onClick={handleLogout}>
                       <ListItemIcon>
@@ -283,22 +293,22 @@ const Header = () => {
                 </>
               ) : (
                 <>
-                  <Button 
-                    color="inherit" 
-                    component={Link} 
-                    href="/login"
-                    sx={{ mr: 1 }}
-                  >
-                    ログイン
-                  </Button>
-                  <Button 
-                    variant="contained" 
-                    color="primary" 
-                    component={Link} 
-                    href="/signup"
-                  >
-                    会員登録
-                  </Button>
+                  <Link href="/login" passHref legacyBehavior>
+                    <Button 
+                      color="inherit" 
+                      sx={{ mr: 1 }}
+                    >
+                      ログイン
+                    </Button>
+                  </Link>
+                  <Link href="/signup" passHref legacyBehavior>
+                    <Button 
+                      variant="contained" 
+                      color="primary"
+                    >
+                      会員登録
+                    </Button>
+                  </Link>
                 </>
               )}
             </Box>

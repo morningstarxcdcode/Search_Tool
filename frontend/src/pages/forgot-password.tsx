@@ -125,14 +125,15 @@ const ForgotPasswordPage = () => {
               </Button>
               
               <Box sx={{ textAlign: 'center', mt: 2 }}>
-                <Link href="/login" passHref>
-                  <Typography variant="body2" component="a" sx={{ 
-                    color: 'primary.main', 
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' } 
-                  }}>
-                    ログインページに戻る
-                  </Typography>
+                <Link href="/login" passHref legacyBehavior>
+                  <a style={{ textDecoration: 'none' }}>
+                    <Typography variant="body2" sx={{ 
+                      color: 'primary.main',
+                      '&:hover': { textDecoration: 'underline' } 
+                    }}>
+                      ログインページに戻る
+                    </Typography>
+                  </a>
                 </Link>
               </Box>
             </Box>

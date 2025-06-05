@@ -9,8 +9,6 @@ import {
   Card,
   CardContent,
   Button,
-  Tabs,
-  Tab,
   TextField,
   MenuItem,
   Table,
@@ -22,108 +20,48 @@ import {
   Paper,
   Chip,
   CircularProgress,
-  Divider,
   IconButton,
   useTheme,
   Avatar,
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
-  DialogActions,
   Fade,
   Zoom,
   Tooltip,
   alpha,
+  Badge,
+  Alert,
+  Snackbar,
+  useMediaQuery,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import {
   GetApp as GetAppIcon,
   TrendingUp as TrendingUpIcon,
   Sort as SortIcon,
-  KeyboardArrowUp as KeyboardArrowUpIcon,
-  KeyboardArrowDown as KeyboardArrowDownIcon,
-  EmojiEvents as EmojiEventsIcon,
-  FilterList as FilterListIcon,
-  Search as SearchIcon,
-  Info as InfoIcon,
   Star as StarIcon,
   StarBorder as StarBorderIcon,
   Favorite as FavoriteIcon,
   FavoriteBorder as FavoriteBorderIcon,
   Share as ShareIcon,
   Close as CloseIcon,
+  Refresh as RefreshIcon,
+  LocalOffer as LocalOfferIcon,
+  Category as CategoryIcon,
+  Person as PersonIcon,
+  ShoppingBag as ShoppingBagIcon,
+  Timeline as TimelineIcon,
+  TrendingDown as TrendingDownIcon,
+  EmojiEvents as EmojiEventsIcon,
+  Info as InfoIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import Image from 'next/image';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-const TabPanel = (props: TabPanelProps) => {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
-  );
-};
-
-interface RankBadgeProps {
-  rank: number;
-}
-
-const RankBadge: React.FC<RankBadgeProps> = ({ rank }) => {
-  if (rank > 3) {
-    return <Typography variant="body1" fontWeight={600}>{rank}</Typography>;
-  }
-  
-  // Choose color based on rank
-  const colors = {
-    1: '#FFD700', // Gold
-    2: '#C0C0C0', // Silver
-    3: '#CD7F32', // Bronze
-  };
-  
-  const badges = {
-    1: '金',
-    2: '銀',
-    3: '銅'
-  };
-  
-  return (
-    <Box
-      sx={{
-        width: 30,
-        height: 30,
-        borderRadius: '50%',
-        backgroundColor: colors[rank as 1 | 2 | 3],
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-      }}
-    >
-      <Typography
-        variant="body2"
-        fontWeight={700}
-        sx={{ color: rank === 2 ? '#333' : '#fff' }}
-      >
-        {badges[rank as 1 | 2 | 3]}
-      </Typography>
-    </Box>
-  );
-};
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 interface Product {
   id: string;
@@ -137,28 +75,33 @@ interface Product {
   lastSoldDate: string;
   description: string;
   import: string;
+  sold?: number;
+  views?: number;
+  competition?: number;
+  priceHistory?: { date: string; price: number }[];
 }
 
 const RankingsPage = () => {
-  const { user, loading, checkSubscription, canPerformRankingSearch } = useAuth();
+  const { user, loading, checkSubscription } = useAuth();
   const router = useRouter();
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [tabValue, setTabValue] = useState(0);
   const [category, setCategory] = useState('all');
   const [period, setPeriod] = useState('30days');
-  const [sortBy, setSortBy] = useState('sold');
+  const [sortBy, setSortBy] = useState('price_desc');
   const [isLoading, setIsLoading] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const tableContainerRef = useRef<HTMLDivElement>(null);
-  const [canSearch, setCanSearch] = useState(false);
-  const [searchCount, setSearchCount] = useState(0);
   const [userPlan, setUserPlan] = useState('');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showDescriptionModal, setShowDescriptionModal] = useState(false);
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [showOnlyImported, setShowOnlyImported] = useState(false);
 
   // Check if user is logged in and has active subscription
   useEffect(() => {
@@ -186,7 +129,7 @@ const RankingsPage = () => {
     if (user) {
       fetchRankings();
     }
-  }, [category, period, sortBy, user]);
+  }, [category, period, sortBy, showOnlyImported, user]);
 
   // Fetch rankings from API
   const fetchRankings = async () => {
@@ -199,14 +142,11 @@ const RankingsPage = () => {
       setProducts(response.data);
     } catch (error) {
       console.error('Error fetching rankings:', error);
+      setSnackbarMessage('データの取得に失敗しました。');
+      setShowSnackbar(true);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  // Handle tab change
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
   };
 
   // Handle description click
@@ -235,9 +175,13 @@ const RankingsPage = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      
+      setSnackbarMessage('CSVファイルをダウンロードしました');
+      setShowSnackbar(true);
     } catch (error) {
       console.error('Error downloading CSV:', error);
-      alert('CSVのダウンロードに失敗しました。');
+      setSnackbarMessage('CSVのダウンロードに失敗しました');
+      setShowSnackbar(true);
     }
   };
 
@@ -252,8 +196,8 @@ const RankingsPage = () => {
   // If loading, show loading state
   if (loading || !user) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <CircularProgress />
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress size={60} thickness={4} />
       </Box>
     );
   }
@@ -272,6 +216,7 @@ const RankingsPage = () => {
         <Container maxWidth="lg">
           <Fade in timeout={800}>
             <Box>
+              {/* Header Section */}
               <Box sx={{ mb: 6, textAlign: 'center' }}>
                 <Typography 
                   variant="h3" 
@@ -310,14 +255,8 @@ const RankingsPage = () => {
                   }}
                 >
                   <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                      <FilterListIcon color="primary" sx={{ mr: 1 }} />
-                      <Typography variant="h6" fontWeight={600}>
-                        フィルター
-                      </Typography>
-                    </Box>
                     <Grid container spacing={3} alignItems="center">
-                      <Grid item xs={12} md={3}>
+                      <Grid item xs={12} md={4}>
                         <TextField
                           select
                           fullWidth
@@ -341,28 +280,7 @@ const RankingsPage = () => {
                         </TextField>
                       </Grid>
                       
-                      <Grid item xs={12} md={3}>
-                        <TextField
-                          select
-                          fullWidth
-                          label="期間"
-                          value={period}
-                          onChange={(e) => setPeriod(e.target.value)}
-                          size="small"
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: 2,
-                              backgroundColor: 'white',
-                            }
-                          }}
-                        >
-                          <MenuItem value="30days">過去30日</MenuItem>
-                          <MenuItem value="60days">過去60日</MenuItem>
-                          <MenuItem value="90days">過去90日</MenuItem>
-                        </TextField>
-                      </Grid>
-                      
-                      <Grid item xs={12} md={3}>
+                      <Grid item xs={12} md={4}>
                         <TextField
                           select
                           fullWidth
@@ -386,28 +304,54 @@ const RankingsPage = () => {
                           <MenuItem value="price_desc">価格（高い順）</MenuItem>
                           <MenuItem value="date_desc">出品日（新しい順）</MenuItem>
                           <MenuItem value="date_asc">出品日（古い順）</MenuItem>
+                          <MenuItem value="sold_desc">売上数（多い順）</MenuItem>
+                          <MenuItem value="views_desc">閲覧数（多い順）</MenuItem>
                         </TextField>
                       </Grid>
                       
-                      <Grid item xs={12} md={3}>
-                        <Button
-                          fullWidth
-                          variant="contained"
-                          color="primary"
-                          startIcon={<GetAppIcon />}
-                          onClick={handleDownloadCSV}
-                          sx={{ 
-                            height: '40px',
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
-                            '&:hover': {
-                              boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
+                      <Grid item xs={12} md={4}>
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'flex-end' }}>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={showOnlyImported}
+                                onChange={(e) => setShowOnlyImported(e.target.checked)}
+                                color="primary"
+                              />
                             }
-                          }}
-                        >
-                          CSVダウンロード
-                        </Button>
+                            label="輸入品のみ"
+                          />
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<GetAppIcon />}
+                            onClick={handleDownloadCSV}
+                            sx={{ 
+                              height: '40px',
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
+                              '&:hover': {
+                                boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
+                              }
+                            }}
+                          >
+                            CSV
+                          </Button>
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            startIcon={<RefreshIcon />}
+                            onClick={fetchRankings}
+                            sx={{ 
+                              height: '40px',
+                              borderRadius: 2,
+                              textTransform: 'none',
+                            }}
+                          >
+                            更新
+                          </Button>
+                        </Box>
                       </Grid>
                     </Grid>
                   </CardContent>
@@ -435,7 +379,6 @@ const RankingsPage = () => {
                         component={Paper} 
                         sx={{ 
                           boxShadow: 'none',
-                          maxHeight: '70vh',
                           overflow: 'auto',
                           position: 'relative',
                           '&::-webkit-scrollbar': {
@@ -477,11 +420,11 @@ const RankingsPage = () => {
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>ブランド</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>状態</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>出品者</TableCell>
-                              <TableCell sx={{ fontWeight: 600, py: 2 }}>最終販売日</TableCell>
+                              <TableCell sx={{ fontWeight: 600, py: 2 }}>売上数</TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
-                            {products.map((product) => (
+                            {products.map((product, index) => (
                               <TableRow
                                 key={product.id}
                                 onClick={() => handleDescriptionClick(product)}
@@ -602,9 +545,15 @@ const RankingsPage = () => {
                                   </Box>
                                 </TableCell>
                                 <TableCell>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {product.lastSoldDate}
-                                  </Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <TrendingUpIcon 
+                                      fontSize="small" 
+                                      color={product.sold && product.sold > 0 ? 'success' : 'disabled'} 
+                                    />
+                                    <Typography variant="body2" color={product.sold && product.sold > 0 ? 'success.main' : 'text.secondary'}>
+                                      {product.sold || 0}
+                                    </Typography>
+                                  </Box>
                                 </TableCell>
                               </TableRow>
                             ))}
@@ -720,8 +669,58 @@ const RankingsPage = () => {
                               ¥{selectedProduct.price.toLocaleString()}
                             </Typography>
                           </Grid>
+                          {selectedProduct.sold !== undefined && (
+                            <Grid item xs={6}>
+                              <Typography variant="body2" color="text.secondary">
+                                売上数
+                              </Typography>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <TrendingUpIcon 
+                                  fontSize="small" 
+                                  color={selectedProduct.sold > 0 ? 'success' : 'disabled'} 
+                                />
+                                <Typography variant="body1" fontWeight={500} color={selectedProduct.sold > 0 ? 'success.main' : 'text.secondary'}>
+                                  {selectedProduct.sold}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                          )}
+                          {selectedProduct.views !== undefined && (
+                            <Grid item xs={6}>
+                              <Typography variant="body2" color="text.secondary">
+                                閲覧数
+                              </Typography>
+                              <Typography variant="body1" fontWeight={500}>
+                                {selectedProduct.views.toLocaleString()}
+                              </Typography>
+                            </Grid>
+                          )}
                         </Grid>
                       </Box>
+                      {selectedProduct.priceHistory && selectedProduct.priceHistory.length > 0 && (
+                        <Box sx={{ mb: 3 }}>
+                          <Typography variant="subtitle1" gutterBottom fontWeight={600}>
+                            価格推移
+                          </Typography>
+                          <Box sx={{ height: 200 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <LineChart data={selectedProduct.priceHistory}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="date" />
+                                <YAxis />
+                                <RechartsTooltip />
+                                <Line 
+                                  type="monotone" 
+                                  dataKey="price" 
+                                  stroke="#2196F3" 
+                                  strokeWidth={2}
+                                  dot={false}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </Box>
+                        </Box>
+                      )}
                       <Box sx={{ display: 'flex', gap: 2 }}>
                         <Button
                           variant="contained"
@@ -756,6 +755,23 @@ const RankingsPage = () => {
               </>
             )}
           </Dialog>
+
+          {/* Snackbar for notifications */}
+          <Snackbar
+            open={showSnackbar}
+            autoHideDuration={3000}
+            onClose={() => setShowSnackbar(false)}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert 
+              onClose={() => setShowSnackbar(false)} 
+              severity="success" 
+              variant="filled"
+              sx={{ width: '100%' }}
+            >
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
         </Container>
       </Box>
     </>

@@ -91,8 +91,15 @@ class FixedMercariScraper:
     
     def extract_text_safely(self, soup, selectors: List[str], default: str = None) -> Optional[str]:
         """Safely extract text using multiple selectors with fallbacks"""
+        # Filter out None values from selectors list
+        selectors = [s for s in selectors if s is not None]
+        
         for selector in selectors:
             try:
+                # Add null check for selector
+                if selector is None:
+                    continue
+                    
                 if ':contains(' in selector:
                     # Handle contains selector differently
                     text_to_find = selector.split(':contains(')[1].split(')')[0].strip('"\'')
@@ -116,8 +123,15 @@ class FixedMercariScraper:
 
     def extract_attribute_safely(self, soup, selectors: List[str], attribute: str, default: str = None) -> Optional[str]:
         """Safely extract attribute using multiple selectors"""
+        # Filter out None values from selectors list
+        selectors = [s for s in selectors if s is not None]
+        
         for selector in selectors:
             try:
+                # Add null check for selector
+                if selector is None:
+                    continue
+                    
                 element = soup.select_one(selector)
                 if element:
                     result = element.get(attribute, '')
@@ -133,70 +147,59 @@ class FixedMercariScraper:
         print(f"🔍 Collecting {limit} product URLs from ranking page...")
         
         ranking_url = f"{self.base_url}/ranking"
-        await self.page.goto(ranking_url, wait_until="networkidle", timeout=30000)
-        await self.page.wait_for_timeout(3000)
+        max_retries = 3
+        retry_count = 0
         
-        all_urls = []
-        page_num = 1
-        
-        while len(all_urls) < limit:
-            print(f"📄 Page {page_num} - Found: {len(all_urls)}/{limit}")
-            
-            # Scroll to load more products
-            for _ in range(5):
-                await self.page.mouse.wheel(0, 2000)
-                await self.page.wait_for_timeout(1000)
-            
-            # Get the HTML content
-            html_content = await self.page.content()
-            soup = BeautifulSoup(html_content, 'html.parser')
-            
-            # Find product links using multiple selectors
-            link_selectors = [
-                'a[data-testid="thumbnail-link"]',
-                'a[href*="/item/"]',
-                'a[href*="/product/"]',
-                'a[href*="/shops/product/"]',
-                'a[class*="ranking-item"]',
-                'a[class*="ranking-product"]'
-            ]
-            
-            item_links = []
-            for selector in link_selectors:
-                links = soup.select(selector)
-                item_links.extend(links)
-            
-            # Remove duplicates and create URLs
-            unique_hrefs = list(set([link.get('href') for link in item_links if link.get('href')]))
-            page_urls = [urljoin(self.base_url, href) for href in unique_hrefs]
-            
-            # Add new URLs
-            new_urls = [url for url in page_urls if url not in all_urls]
-            all_urls.extend(new_urls)
-            
-            print(f"   Found {len(new_urls)} new URLs on page {page_num}")
-            
-            # If we have enough URLs, break
-            if len(all_urls) >= limit:
-                break
-            
-            # If no new URLs found, try next page
-            if not new_urls:
-                next_button = soup.select_one('a[data-testid="pagination-next-button"], a:contains("次へ"), a[aria-label*="次"]')
-                if not next_button:
-                    print("📄 No more pages available")
-                    break
+        while retry_count < max_retries:
+            try:
+                # Try with a longer timeout and different wait strategy
+                await self.page.goto(ranking_url, wait_until="domcontentloaded", timeout=60000)
+                await self.page.wait_for_timeout(5000)  # Additional wait time
                 
-                # Go to next page
-                next_url = urljoin(self.base_url, next_button.get('href', ''))
-                await self.page.goto(next_url, wait_until="networkidle", timeout=30000)
-                await self.page.wait_for_timeout(2000)
-                page_num += 1
-            else:
-                # Continue scrolling on current page
-                pass
+                # Scroll to load more products
+                for _ in range(5):
+                    await self.page.mouse.wheel(0, 2000)
+                    await self.page.wait_for_timeout(2000)
+                
+                # Get the HTML content
+                html_content = await self.page.content()
+                soup = BeautifulSoup(html_content, 'html.parser')
+                
+                # Find product links using multiple selectors
+                link_selectors = [
+                    'a[data-testid="thumbnail-link"]',
+                    'a[href*="/item/"]',
+                    'a[href*="/product/"]',
+                    'a[href*="/shops/product/"]',
+                    'a[class*="ranking-item"]',
+                    'a[class*="ranking-product"]'
+                ]
+                
+                item_links = []
+                for selector in link_selectors:
+                    links = soup.select(selector)
+                    item_links.extend(links)
+                
+                # Remove duplicates and create URLs
+                unique_hrefs = list(set([link.get('href') for link in item_links if link.get('href')]))
+                page_urls = [urljoin(self.base_url, href) for href in unique_hrefs]
+                
+                if page_urls:
+                    print(f"✅ Successfully collected {len(page_urls)} URLs")
+                    return page_urls[:limit]
+                
+                retry_count += 1
+                print(f"⚠️ No URLs found, retrying ({retry_count}/{max_retries})...")
+                await self.page.wait_for_timeout(5000)  # Wait before retry
+                
+            except Exception as e:
+                retry_count += 1
+                print(f"⚠️ Error collecting URLs: {str(e)}")
+                print(f"Retrying ({retry_count}/{max_retries})...")
+                await self.page.wait_for_timeout(5000)  # Wait before retry
         
-        return all_urls[:limit]
+        print("❌ Failed to collect URLs after maximum retries")
+        return []
 
     async def extract_product_details(self, url: str) -> Optional[ProductData]:
         """Extract product details with improved data filtering"""
@@ -309,37 +312,57 @@ class FixedMercariScraper:
             image_url = next((url for url in all_images if url), '')
             print(f"   Debug - Image URL found: {image_url}")
 
-            # Extract brand
-            brand_selectors = [
-                'span[data-testid="brand"]',
-                'div:contains("ブランド") + div',
-                'div:contains("Brand") + div',
-                '.brand'
-            ]
-            brand = self.extract_text_safely(soup, brand_selectors)
-            if len(brand) > 20:
+            # --- Improved Brand Extraction ---
+            brand = None
+            # Look for a label 'ブランド' and get the next sibling or value in the same row
+            brand_label = soup.find(lambda tag: tag.name in ['th', 'dt', 'div', 'span'] and 'ブランド' in tag.get_text())
+            if brand_label:
+                # Try next sibling
+                next_sib = brand_label.find_next_sibling()
+                if next_sib and next_sib.get_text(strip=True):
+                    brand = next_sib.get_text(strip=True)
+                # Try parent > next sibling (for table rows)
+                elif brand_label.parent and brand_label.parent.find_all('td'):
+                    tds = brand_label.parent.find_all('td')
+                    if len(tds) > 1:
+                        brand = tds[1].get_text(strip=True)
+            # Fallback: try previous selectors
+            if not brand:
+                brand_selectors = [
+                    'span[data-testid="ブランド"]',
+                    'span[class*="merTextLink"]',
+                    'a[href*="/search?brand"]'
+                ]
+                brand = self.extract_text_safely(soup, brand_selectors)
+            if brand and len(brand) > 20:
                 brand = None
             print(f"   Debug - Brand found: {brand}")
 
-            # Extract category
-            category_selectors = [
-                'div[role="listitem"]',
-
-            ]
-            category_links = []
-            for selector in category_selectors:
-                try:
-                    links = soup.select(selector)
-                    if links:
-                        categories = [link.get_text(strip=True) for link in links if link.get_text(strip=True)]
-                        if categories:
-                            category_links = categories
+            # --- Improved Category Extraction ---
+            # Get all breadcrumb items and join them
+            breadcrumb = soup.select('nav[aria-label="パンくずリスト"], nav[aria-label="breadcrumb"]')
+            category = None
+            if breadcrumb:
+                items = breadcrumb[0].find_all(['a', 'span', 'div'], recursive=True)
+                categories = [item.get_text(strip=True) for item in items if item.get_text(strip=True)]
+                if categories:
+                    category = ' > '.join(categories)
+            # Fallback: try previous selectors
+            if not category:
+                category_selectors = [
+                    'div[class*="merBreadcrumbItem"]',
+                    'div[role="listitem"]',
+                    'a[href*="/search/category"]'
+                ]
+                links = []
+                for selector in category_selectors:
+                    found = soup.select(selector)
+                    if found:
+                        links = [link.get_text(strip=True) for link in found if link.get_text(strip=True)]
+                        if links:
                             break
-                except Exception as e:
-                    print(f"   Warning: Category selector '{selector}' failed: {e}")
-            
-            category =self.extract_text_safely(soup, category_selectors)
-            
+                if links:
+                    category = ' > '.join(links)
             print(f"   Debug - Category found: {category}")
 
             # Extract condition

@@ -7,7 +7,6 @@ class SearchRequest(BaseModel):
     max_price: Optional[int] = Field(None, description="Maximum price")
     category: Optional[str] = Field(None, description="Category ID")
     sort_by: Optional[str] = Field(None, description="Sort order")
-    limit: int = Field(5, description="Maximum number of results")
 
 class SearchResult(BaseModel):
     id: str = Field(..., description="Product ID")

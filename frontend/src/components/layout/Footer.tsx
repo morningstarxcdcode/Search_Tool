@@ -11,24 +11,24 @@ const Footer = () => {
         { text: 'ホーム', href: '/' },
         { text: '料金プラン', href: '/pricing' },
         { text: 'よくある質問', href: '/faq' },
-        { text: 'お問い合わせ', href: '/contact' },
+        // { text: 'お問い合わせ', href: '/contact' },
       ],
     },
-    {
-      title: 'リソース',
-      links: [
-        { text: 'ブログ', href: '/blog' },
-        { text: 'チュートリアル', href: '/tutorials' },
-        { text: 'マニュアル', href: '/manual' },
-      ],
-    },
+    // {
+    //   title: 'リソース',
+    //   links: [
+    //     { text: 'ブログ', href: '/blog' },
+    //     { text: 'チュートリアル', href: '/tutorials' },
+    //     { text: 'マニュアル', href: '/manual' },
+    //   ],
+    // },
     {
       title: '会社情報',
       links: [
         { text: '運営会社', href: '/company' },
         { text: '利用規約', href: '/terms' },
         { text: 'プライバシーポリシー', href: '/privacy' },
-        { text: '特定商取引法に基づく表記', href: '/legal' },
+        // { text: '特定商取引法に基づく表記', href: '/legal' },
       ],
     },
   ];

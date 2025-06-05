@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 import { Box, Container } from '@mui/material';
 import Header from './Header';
 import Footer from './Footer';
@@ -12,9 +12,23 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const router = useRouter();
   const { user } = useAuth();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Skip layout on login and signup pages
   const isAuthPage = router.pathname === '/login' || router.pathname === '/signup';
+  
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <Box component="main" sx={{ minHeight: '100vh' }}>
+        {children}
+      </Box>
+    );
+  }
   
   if (isAuthPage) {
     return (

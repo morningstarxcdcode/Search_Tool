@@ -3,8 +3,15 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+# MongoDB connection settings
+MONGODB_URL = "mongodb://localhost:27017"
+DB_NAME = "mercari_search"
+COLLECTION_NAME = "products"
 
 class ProductResponse(BaseModel):
     id: str
@@ -22,27 +29,35 @@ class ProductResponse(BaseModel):
     updated_at: datetime
 
 class ProductSearch(BaseModel):
+    keyword: str
     category: Optional[str] = None
     brand: Optional[str] = None
     min_price: Optional[int] = None
     max_price: Optional[int] = None
 
+async def get_database():
+    """Get database connection"""
+    try:
+        client = AsyncIOMotorClient(MONGODB_URL)
+        db = client[DB_NAME]
+        return client, db
+    except Exception as e:
+        logger.error(f"Failed to connect to MongoDB: {str(e)}")
+        raise HTTPException(status_code=500, detail="Database connection failed")
+
 @router.get("/", response_model=List[ProductResponse])
 async def get_products(
     skip: int = 0,
-    limit: int = 10,
     category: Optional[str] = None,
     brand: Optional[str] = None,
     min_price: Optional[int] = None,
     max_price: Optional[int] = None
 ):
     """Get products from MongoDB with optional filters"""
-    print("Fetching products from MongoDB...")
+    logger.info("Fetching products from MongoDB...")
     try:
-        # Connect to MongoDB
-        client = AsyncIOMotorClient('mongodb://localhost:27017')
-        db = client.mercari_search
-        collection = db.products
+        client, db = await get_database()
+        collection = db[COLLECTION_NAME]
 
         # Build filter
         filter_query = {}
@@ -57,34 +72,37 @@ async def get_products(
             if max_price is not None:
                 filter_query['price']['$lte'] = max_price
 
-        print(f"Using filter query: {filter_query}")
+        logger.info(f"Using filter query: {filter_query}")
 
-        # Get products
-        cursor = collection.find(filter_query).skip(skip).limit(limit)
-        products = await cursor.to_list(length=limit)
+        # Get products with limit
+        cursor = collection.find(filter_query).skip(skip)
+        products = await cursor.to_list(length=100)  # Limit to 100 results
         
-        print(f"Found {len(products)} products")
+        logger.info(f"Found {len(products)} products")
 
         # Close MongoDB connection
         client.close()
 
+        if not products:
+            return []
+
         return products
 
     except Exception as e:
-        print(f"Error fetching products: {str(e)}")
+        logger.error(f"Error fetching products: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/search", response_model=List[ProductResponse])
 async def search_products(search: ProductSearch):
     """Search products with JSON filters"""
     try:
-        # Connect to MongoDB
-        client = AsyncIOMotorClient('mongodb://localhost:27017')
-        db = client.mercari_search
-        collection = db.products
+        client, db = await get_database()
+        collection = db[COLLECTION_NAME]
 
         # Build filter
         filter_query = {}
+        if search.keyword:
+            filter_query['name'] = {'$regex': search.keyword, '$options' : 'i'}
         if search.category:
             filter_query['category'] = {'$regex': search.category, '$options': 'i'}
         if search.brand:
@@ -103,19 +121,21 @@ async def search_products(search: ProductSearch):
         # Close MongoDB connection
         client.close()
 
+        if not products:
+            return []
+
         return products
 
     except Exception as e:
+        logger.error(f"Error searching products: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{product_id}", response_model=ProductResponse)
 async def get_product(product_id: str):
     """Get a single product by ID"""
     try:
-        # Connect to MongoDB
-        client = AsyncIOMotorClient('mongodb://localhost:27017')
-        db = client.mercari_search
-        collection = db.products
+        client, db = await get_database()
+        collection = db[COLLECTION_NAME]
 
         # Get product
         product = await collection.find_one({'id': product_id})
@@ -129,4 +149,5 @@ async def get_product(product_id: str):
         return product
 
     except Exception as e:
+        logger.error(f"Error fetching product {product_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e)) 

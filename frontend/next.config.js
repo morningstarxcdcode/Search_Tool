@@ -8,14 +8,17 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'static.mercdn.net',
       },
+      {
+        protocol: 'https',
+        hostname: 'assets.mercari-shops-static.com',
+      },
     ],
-    domains: ['assets.mercari-shops-static.com'],
   },
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/:path*` : 'http://localhost:5000/api/:path*',
+        destination: process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api/:path*` : 'http://localhost:8000/api/:path*',
       },
     ];
   },

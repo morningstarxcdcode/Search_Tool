@@ -15,13 +15,19 @@ class Settings(BaseSettings):
     MONGODB_DB_NAME: str = "mercari_search"
 
     # CORS Settings
-    CORS_ORIGINS: List[str] = [
+    BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",     # Next.js development server
         "http://localhost:8000",     # FastAPI development server
         "http://127.0.0.1:3000",    # Alternative localhost
         "http://127.0.0.1:8000",    # Alternative localhost
         "http://localhost",          # Generic localhost
-        "http://127.0.0.1"          # Generic localhost
+        "http://127.0.0.1",
+        "http://162.43.27.150:3000",
+        "https://162.43.27.150:3000",
+        "http://162.43.27.150:8000",
+        "https://162.43.27.150:8000",
+        "http://162.43.27.150",
+        "https://162.43.27.150",
     ]
 
     # Scraper Settings
@@ -30,7 +36,7 @@ class Settings(BaseSettings):
     # Authentication Settings
     SECRET_KEY: str = "your-secret-key-here"  # Change this in production
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60*24
 
     # API V1 STR
     API_V1_STR: str = "/api/v1"

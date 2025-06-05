@@ -34,30 +34,30 @@ const Home = () => {
   const features = [
     {
       title: '売れ筋商品ランキング',
-      description: 'カテゴリー内の売上ランキングをワンクリックで確認できます。',
+      description: '使いやすいUIでカテゴリー内の売上ランキングをワンクリックで確認できます。',
       icon: <EqualizerIcon fontSize="large" color="primary" />,
     },
     {
       title: '高速検索',
-      description: '独自の技術により、検索結果を爆速で表示します。リサーチの時間を大幅に削減。',
+      description: ' 独自の技術により、検索結果を爆速で表示します。<br /> リサーチの時間を大幅に削減。',
       icon: <SpeedIcon fontSize="large" color="primary" />,
     },
     {
       title: '中国輸入に特化',
-      description: 'インポート商品を自動識別し、競合分析も簡単に行えます。',
+      description: 'インポート商品を自動<br />識別し、 競合分析も簡単<br />に行えます。',
       icon: <SearchIcon fontSize="large" color="primary" />,
     },
     {
       title: '時間とコストの節約',
-      description: 'リサーチ作業を効率化し、より多くの時間を商品選定や販売戦略に充てられます。',
+      description: 'リサーチ作業を効率化し、 より多くの時間を販売<br />戦略や未来への<br />投資に充てられます。',
       icon: <SavingsIcon fontSize="large" color="primary" />,
     },
   ];
 
   const plans = [
     {
-      title: 'ベーシック',
-      price: '2,980',
+      title: 'フリープラン',
+      price: '0',
       features: [
         '基本リサーチ機能',
         'ランキング検索（月3回まで）',
@@ -70,15 +70,15 @@ const Home = () => {
       highlighted: false,
     },
     {
-      title: 'スタンダード',
-      price: '4,980',
+      title: 'スタンダードプラン',
+      price: '2,480',
       features: [
         'ベーシックプランの全機能',
-        'ランキング検索（月50回まで）',
+        'ランキング検索（月30回まで）',
         '詳細なデータ分析と統計',
         '競合分析（詳細）',
         'CSVデータ出力（月5回まで）',
-        '検索履歴（7日間保存）',
+        '検索履歴（5日間保存）',
         'カスタムタグ付け機能',
       ],
       cta: '人気プラン',
@@ -86,7 +86,7 @@ const Home = () => {
     },
     {
       title: 'プレミアム',
-      price: '9,800',
+      price: '3,480',
       features: [
         'スタンダードプランの全機能',
         'ランキング検索（無制限）',
@@ -94,7 +94,7 @@ const Home = () => {
         '検索履歴（無制限保存）',
         'AIによる検索補助',
         'リアルタイム通知機能',
-        '優先サポート（24時間以内）',
+        '混雑時の優先レスポンス',
       ],
       cta: '最大限の機能',
       highlighted: false,
@@ -130,11 +130,10 @@ const Home = () => {
                 gutterBottom
                 sx={{ fontSize: { xs: '2.5rem', md: '3.5rem' } }}
               >
-                物販リサーチを
                 <Box component="span" sx={{ color: 'primary.main', display: 'inline' }}>
-                  {' '}極限まで{' '}
+                  {' '}もう悩まない。<br />
+                  迷わず、 稼げる。{' '}
                 </Box>
-                簡略化
               </Typography>
               <Typography
                 variant="h5"
@@ -142,8 +141,8 @@ const Home = () => {
                 paragraph
                 sx={{ mb: 4, maxWidth: 480 }}
               >
-                Seller Naviで手動作業から解放されませんか？
-                売れ筋商品を素早く検索し、あなたのビジネスを加速させます。
+                スマホで売れる“売れる商品”が秒で見つかる<br />売れる商品をラクに見つけられる。<br />
+                「メルカリ物販リサーチツール」
               </Typography>
               <Box sx={{ mt: 4, mb: { xs: 4, md: 0 } }}>
                 <Button
@@ -161,7 +160,7 @@ const Home = () => {
                     fontWeight: 600,
                   }}
                 >
-                  14日間無料体験
+                  7日間無料体験
                 </Button>
                 <Button
                   variant="outlined"
@@ -191,10 +190,9 @@ const Home = () => {
                 <Image
                   src="/hero-image.png"
                   alt="Seller Naviダッシュボード"
-                  width={300}
-                  height={150}
+                  width={600}
+                  height={400}
                   style={{ objectFit: 'contain', maxWidth: '100%', height: 'auto' }}
-                  priority
                 />
               </Box>
             </Grid>
@@ -251,6 +249,11 @@ const Home = () => {
               </Grid>
             ))}
           </Grid>
+          <Box sx={{ textAlign: 'center', mt: 4 }}>
+            <Typography variant="h6" color="text.secondary" sx={{ maxWidth: 800, mx: 'auto' }}>
+            だから「迷わない・続けられる・稼げる」
+            </Typography>
+          </Box>
         </Container>
       </Box>
 
@@ -351,13 +354,6 @@ const Home = () => {
               </Grid>
             ))}
           </Grid>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ textAlign: 'center', mt: 4 }}
-          >
-            ※すべてのプランに30日間の無料トライアル期間が含まれています。
-          </Typography>
         </Container>
       </Box>
 
@@ -383,8 +379,9 @@ const Home = () => {
             variant="h6"
             sx={{ mb: 4, opacity: 0.9 }}
           >
-            Seller Naviで手動作業から解放されませんか？<br />
-            利用開始までわずか5分
+            迷っている時間がもったいない。<br /> 
+            今すぐ“売れる商品”を見に行こう。<br />
+            利用開始まで最短5分!<br />
           </Typography>
           <Button
             variant="contained"
@@ -399,8 +396,16 @@ const Home = () => {
               fontWeight: 600,
             }}
           >
-            30日間無料で体験する
+            7日間無料で体験する
           </Button>
+          <Typography
+            sx={{ mt: 4, opacity: 0.9 }}
+          >
+            <Box fontSize={'12px'} >
+            ※無料体験後、自動的にフリーブリンに移行しますが、引き続き有料プランの機能をご利用いただく場合は、<br />
+            有料プランの登録操作をお願いいたします。
+            </Box>
+          </Typography>
         </Container>
       </Box>
     </>

@@ -41,6 +41,11 @@ const SignupPage = () => {
       return;
     }
     
+    if (password.length < 8) {
+      setFormError('パスワードは8文字以上で入力してください');
+      return;
+    }
+    
     if (password !== confirmPassword) {
       setFormError('パスワードが一致しません');
       return;
@@ -54,9 +59,9 @@ const SignupPage = () => {
     try {
       await signup(name, email, password);
       router.push('/login');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Registration error:', err);
-      setFormError('アカウント登録に失敗しました。もう一度お試しください。');
+      setFormError(err.message || 'アカウント登録に失敗しました。もう一度お試しください。');
     }
   };
 
@@ -102,9 +107,6 @@ const SignupPage = () => {
             </Alert>
           )}
           
-          <Alert severity="info" sx={{ width: '100%', mb: 2 }}>
-            デモ用アカウントはログインページから: admin@gmail.com / 123456 でログインできます
-          </Alert>
           
           <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
             <TextField
@@ -139,6 +141,7 @@ const SignupPage = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              helperText="8文字以上で入力してください"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -175,10 +178,12 @@ const SignupPage = () => {
               }
               label={
                 <Typography variant="body2">
-                  <Link href="/terms" passHref>
-                    <Typography component="a" variant="body2" color="primary" sx={{ textDecoration: 'none' }}>
-                      ご利用規約
-                    </Typography>
+                  <Link href="/terms" passHref legacyBehavior>
+                    <a style={{ color: 'inherit', textDecoration: 'none' }}>
+                      <Typography component="span" variant="body2" color="primary" sx={{ textDecoration: 'underline' }}>
+                        ご利用規約
+                      </Typography>
+                    </a>
                   </Link>
                   に同意します
                 </Typography>
@@ -198,14 +203,15 @@ const SignupPage = () => {
             
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="/login" passHref>
-                  <Typography variant="body2" component="a" sx={{ 
-                    color: 'primary.main', 
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' }
-                  }}>
-                    既にアカウントをお持ちの方はこちら
-                  </Typography>
+                <Link href="/login" passHref legacyBehavior>
+                  <a style={{ textDecoration: 'none' }}>
+                    <Typography variant="body2" sx={{ 
+                      color: 'primary.main',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}>
+                      既にアカウントをお持ちの方はこちら
+                    </Typography>
+                  </a>
                 </Link>
               </Grid>
             </Grid>

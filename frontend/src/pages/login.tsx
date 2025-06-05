@@ -74,6 +74,7 @@ const LoginPage = () => {
               width={180}
               height={60}
               style={{ objectFit: 'contain' }}
+              priority
             />
           </Box>
           
@@ -86,11 +87,7 @@ const LoginPage = () => {
               {formError || error}
             </Alert>
           )}
-          
-          <Alert severity="info" sx={{ width: '100%', mb: 2 }}>
-            デモ用ログイン情報: admin@gmail.com / 123456
-          </Alert>
-          
+                    
           <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
             <TextField
               margin="normal"
@@ -143,25 +140,27 @@ const LoginPage = () => {
             
             <Grid container>
               <Grid item xs>
-                <Link href="/forgot-password" passHref>
-                  <Typography variant="body2" component="a" sx={{ 
-                    color: 'primary.main', 
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' }
-                  }}>
-                    パスワードをお忘れですか？
-                  </Typography>
+                <Link href="/forgot-password" passHref legacyBehavior>
+                  <a style={{ textDecoration: 'none' }}>
+                    <Typography variant="body2" sx={{ 
+                      color: 'primary.main',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}>
+                      パスワードをお忘れですか？
+                    </Typography>
+                  </a>
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="/signup" passHref>
-                  <Typography variant="body2" component="a" sx={{ 
-                    color: 'primary.main', 
-                    textDecoration: 'none',
-                    '&:hover': { textDecoration: 'underline' }
-                  }}>
-                    アカウント登録はこちら
-                  </Typography>
+                <Link href="/signup" passHref legacyBehavior>
+                  <a style={{ textDecoration: 'none' }}>
+                    <Typography variant="body2" sx={{ 
+                      color: 'primary.main',
+                      '&:hover': { textDecoration: 'underline' }
+                    }}>
+                      アカウント登録はこちら
+                    </Typography>
+                  </a>
                 </Link>
               </Grid>
             </Grid>

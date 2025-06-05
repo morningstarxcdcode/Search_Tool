@@ -69,14 +69,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const router = useRouter();
 
   // Configure axios defaults
-  axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/';
+  axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL;
 
   // Add request interceptor to add auth token
   axios.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
       }
       return config;
     },
@@ -90,15 +92,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkUser = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const response = await axios.get('api/v1/auth/me');
-          setUser(response.data);
+        if (typeof window !== 'undefined') {
+          const token = localStorage.getItem('token');
+          if (token) {
+            const response = await axios.get('api/v1/auth/me');
+            setUser(response.data);
+          }
         }
       } catch (err) {
         console.error('Error checking authentication', err);
         setError('Failed to authenticate');
-        localStorage.removeItem('token');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+        }
       } finally {
         setLoading(false);
       }
@@ -124,8 +130,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       );
 
       const { access_token, token_type } = response.data;
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('token_type', token_type);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', access_token);
+        localStorage.setItem('token_type', token_type);
+      }
 
       // Get user data
       const userResponse = await axios.get('api/v1/auth/me');
@@ -144,22 +152,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     
     try {
       await axios.post('api/v1/auth/register', {
-        email,
-        name,
-        password,
-        role: 'user'
+        email: email,
+        name: name,
+        password: password,
+        role: 'user',
+        plan: 'basic',
+        'impo-noti': false,
+        'trend-noti': false,
+        'update-noti': false,
+        'search-report': false
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Signup error', err);
-      throw new Error('Failed to create account');
+      
+      // Check for specific error types
+      if (err.response?.status === 422) {
+        // Validation error
+        const errorDetails = err.response.data?.detail;
+        if (Array.isArray(errorDetails)) {
+          const messages = errorDetails.map((detail: any) => detail.msg).join(', ');
+          throw new Error(`Validation error: ${messages}`);
+        } else if (errorDetails) {
+          throw new Error(`Validation error: ${errorDetails}`);
+        } else {
+          throw new Error('Invalid input data. Please check your information.');
+        }
+      } else if (err.response?.status === 400) {
+        // Bad request - possibly email already exists
+        const errorMessage = err.response.data?.detail || 'Email already registered';
+        throw new Error(errorMessage);
+      } else {
+        throw new Error('アカウントの作成に失敗しました。もう一度お試しください。');
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('token_type');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('token_type');
+    }
     setUser(null);
     router.push('/');
   };

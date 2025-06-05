@@ -14,3 +14,4 @@ psutil==5.9.8
 email-validator 
 pydantic[email]
 playwright==1.41.2
+pydantic-settings==2.9.1
