@@ -60,7 +60,7 @@ const TabPanel = (props: TabPanelProps) => {
 };
 
 const SettingsPage = () => {
-  const { user, loading, checkSubscription } = useAuth();
+  const { user, loading, checkSubscription, updateProfile, updateNotificationSettings, changePassword } = useAuth();
   const router = useRouter();
   const theme = useTheme();
   
@@ -85,8 +85,11 @@ const SettingsPage = () => {
   });
   
   const [securitySettings, setSecuritySettings] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
     twoFactorAuth: false,
-    sessionTimeout: '30',
+    sessionTimeout: '30'
   });
   
   const [paymentInfo, setPaymentInfo] = useState({
@@ -142,33 +145,76 @@ const SettingsPage = () => {
     if (e.target.name === 'twoFactorAuth') {
       setSecuritySettings({
         ...securitySettings,
-        twoFactorAuth: e.target.checked,
+        twoFactorAuth: e.target.checked
       });
     } else {
       setSecuritySettings({
         ...securitySettings,
-        [e.target.name]: e.target.value,
+        [e.target.name]: e.target.value
       });
     }
   };
 
-  // Handle save settings
-  const handleSaveSettings = () => {
+  // Handle save profile
+  const handleSaveProfile = async () => {
     setIsSaving(true);
     setSaveSuccess(false);
     setSaveError('');
     
-    // Simulate API call
-    axios.patch('/api/v1/auth/me', profileData)
-      .then(() => {
-        setSaveSuccess(true);
-      })
-      .catch((error) => {
-        setSaveError(error.message || '設定の保存に失敗しました。');
-      })
-      .finally(() => {
-        setIsSaving(false);
+    try {
+      await updateProfile({
+        name: profileData.name,
+        email: profileData.email,
+        phone: profileData.phoneNumber
       });
+      setSaveSuccess(true);
+    } catch (error: any) {
+      setSaveError(error.message || '設定の保存に失敗しました。');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Handle save notification settings
+  const handleSaveNotifications = async () => {
+    setIsSaving(true);
+    setSaveSuccess(false);
+    setSaveError('');
+    
+    try {
+      await updateNotificationSettings(notificationSettings);
+      setSaveSuccess(true);
+    } catch (error: any) {
+      setSaveError(error.message || '通知設定の保存に失敗しました。');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Handle password change
+  const handlePasswordChange = async () => {
+    setIsSaving(true);
+    setSaveSuccess(false);
+    setSaveError('');
+    
+    try {
+      await changePassword(
+        securitySettings.currentPassword,
+        securitySettings.newPassword
+      );
+      setSaveSuccess(true);
+      // Clear password fields
+      setSecuritySettings(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      }));
+    } catch (error: any) {
+      setSaveError(error.message || 'パスワードの変更に失敗しました。');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Loading state
@@ -257,6 +303,17 @@ const SettingsPage = () => {
                     />
                   </Grid>
                 </Grid>
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<SaveIcon />}
+                    onClick={handleSaveProfile}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? '保存中...' : 'プロフィールを保存'}
+                  </Button>
+                </Box>
               </TabPanel>
               
               <TabPanel value={tabValue} index={1}>
@@ -329,6 +386,17 @@ const SettingsPage = () => {
                     定期的な市場調査レポートをメールで受け取ります。
                   </Typography>
                 </FormGroup>
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<SaveIcon />}
+                    onClick={handleSaveNotifications}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? '保存中...' : '通知設定を保存'}
+                  </Button>
+                </Box>
               </TabPanel>
               
               <TabPanel value={tabValue} index={2}>
@@ -349,6 +417,9 @@ const SettingsPage = () => {
                       fullWidth
                       label="現在のパスワード"
                       type="password"
+                      name="currentPassword"
+                      value={securitySettings.currentPassword}
+                      onChange={handleSecurityChange}
                       variant="outlined"
                     />
                   </Grid>
@@ -357,6 +428,9 @@ const SettingsPage = () => {
                       fullWidth
                       label="新しいパスワード"
                       type="password"
+                      name="newPassword"
+                      value={securitySettings.newPassword}
+                      onChange={handleSecurityChange}
                       variant="outlined"
                     />
                   </Grid>
@@ -365,6 +439,9 @@ const SettingsPage = () => {
                       fullWidth
                       label="新しいパスワード（確認）"
                       type="password"
+                      name="confirmPassword"
+                      value={securitySettings.confirmPassword}
+                      onChange={handleSecurityChange}
                       variant="outlined"
                     />
                   </Grid>
@@ -372,9 +449,11 @@ const SettingsPage = () => {
                     <Button
                       variant="contained"
                       color="primary"
+                      onClick={handlePasswordChange}
+                      disabled={isSaving || !securitySettings.currentPassword || !securitySettings.newPassword || securitySettings.newPassword !== securitySettings.confirmPassword}
                       sx={{ mt: 1 }}
                     >
-                      パスワードを変更
+                      {isSaving ? '変更中...' : 'パスワードを変更'}
                     </Button>
                   </Grid>
                 </Grid>
@@ -540,18 +619,6 @@ const SettingsPage = () => {
                   </Box>
                 </Paper>
               </TabPanel>
-              
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSaveSettings}
-                  disabled={isSaving || tabValue === 4}
-                >
-                  {isSaving ? '保存中...' : '設定を保存'}
-                </Button>
-              </Box>
             </Paper>
           </Grid>
         </Grid>

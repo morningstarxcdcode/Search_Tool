@@ -62,3 +62,18 @@ class UserUpdate(BaseModel):
 
     class Config:
         populate_by_name = True 
+
+class NotificationSettings(BaseModel):
+    """Notification settings model"""
+    emailNotifications: bool = Field(True, alias="impo-noti")
+    trendAlerts: bool = Field(True, alias="trend-noti")
+    productUpdates: bool = Field(False, alias="update-noti")
+    marketResearch: bool = Field(True, alias="search-report")
+
+    class Config:
+        populate_by_name = True
+
+class PasswordChange(BaseModel):
+    """Password change model"""
+    current_password: str
+    new_password: str = Field(..., min_length=8) 

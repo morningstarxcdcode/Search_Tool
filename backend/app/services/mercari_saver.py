@@ -26,6 +26,7 @@ class ProductData:
     condition: Optional[str] = None
     seller_name: Optional[str] = None
     description: Optional[str] = None
+    like_count: Optional[int] = None
     created_at: datetime = None
     updated_at: datetime = None
 
@@ -263,7 +264,6 @@ class FixedMercariScraper:
             price_selectors = [
                 'div[class*="sc-d804af5a-9 bjxcBV mer-spacing-t-8 mer-spacing-b-16"]',
                 'div[class*="sc-c5724afb-0 feUXIG sc-75176d5b-1 knGNCr mer-spacing-r-8"]',
-                'div[data-testid="product-price"]'
             ]
             
             price_raw = self.extract_text_safely(soup, price_selectors, '0')
@@ -431,6 +431,30 @@ class FixedMercariScraper:
                 description = description_raw[:200] + "..." if len(description_raw) > 200 else description_raw
             print(f"   Debug - Description found: {description}")
             
+            # Extract like count with updated selectors
+            like_selectors = [
+                'span[data-testid="like-count"]',
+                'span[class*="like-count"]',
+                'span[class*="favorite-count"]',
+                'div[class*="like-count"]',
+                'div[class*="favorite-count"]',
+                'span:contains("いいね")',
+                'span:contains("likes")'
+            ]
+            
+            like_count = None
+            like_text = self.extract_text_safely(soup, like_selectors)
+            if like_text:
+                # Extract numbers from text (e.g., "123 likes" -> 123)
+                like_numbers = re.findall(r'\d+', like_text)
+                if like_numbers:
+                    try:
+                        like_count = int(like_numbers[0])
+                    except ValueError:
+                        like_count = None
+            
+            print(f"   Debug - Like count found: {like_count}")
+
             # Create product data
             product_data = {
                 'id': item_id,
@@ -442,7 +466,8 @@ class FixedMercariScraper:
                 'category': category,
                 'condition': condition,
                 'seller_name': seller_name,
-                'description': description
+                'description': description,
+                'like_count': like_count
             }
             
             # Print validation details
@@ -485,6 +510,7 @@ class FixedMercariScraper:
                     'condition': product.condition,
                     'seller_name': product.seller_name,
                     'description': product.description,
+                    'like_count': product.like_count,
                     'updated_at': datetime.utcnow()
                 }
 
@@ -595,7 +621,7 @@ async def main():
         mongo_client = AsyncIOMotorClient('mongodb://localhost:27017')
         
         # Use fixed limit of 35
-        limit = 60
+        limit = 5
         print(f"📦 Scraping {limit} products from ranking page")
         
         # Start scraping

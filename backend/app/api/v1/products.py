@@ -64,7 +64,6 @@ async def get_products(
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
     sort_by: str = 'created_desc',
-    imported: Optional[bool] = None
 ):
     """Get products from MongoDB with optional filters and sorting"""
     logger.info("Fetching products from MongoDB...")
@@ -82,8 +81,6 @@ async def get_products(
                 filter_query['price']['$gte'] = min_price
             if max_price is not None:
                 filter_query['price']['$lte'] = max_price
-        if imported is not None:
-            filter_query['import'] = imported
 
         logger.info(f"Using filter query: {filter_query}")
 
@@ -115,14 +112,12 @@ async def export_products(
     min_price: Optional[int] = None,
     max_price: Optional[int] = None,
     sort_by: str = 'created_desc',
-    imported: Optional[bool] = None
 ):
-    """Export products to CSV with optional filters and sorting"""
     try:
         client, db = await get_database()
         collection = db[COLLECTION_NAME]
 
-        # Build filter
+        # Build filters
         filter_query = {}
         if category and category != 'all':
             filter_query['category'] = {'$regex': category, '$options': 'i'}
@@ -132,28 +127,22 @@ async def export_products(
                 filter_query['price']['$gte'] = min_price
             if max_price is not None:
                 filter_query['price']['$lte'] = max_price
-        if imported is not None:
-            filter_query['import'] = imported
 
-        # Get sort query
+        # Get sorting
         sort_query = get_sort_query(sort_by)
 
-        # Get all products matching filter
+        # Query MongoDB
         cursor = collection.find(filter_query).sort(sort_query)
-        products = await cursor.to_list(length=None)  # No limit for export
+        products = await cursor.to_list(length=None)
 
-        # Create CSV in memory
-        output = io.StringIO()
-        writer = csv.writer(output)
-        
-        # Write header
+        # Write CSV to StringIO
+        string_io = io.StringIO()
+        writer = csv.writer(string_io)
         writer.writerow([
-            'ID', '商品名', '価格', 'カテゴリー', '状態', 
-            '出品者', '商品URL', '画像URL', '説明', 
-            '作成日時', '更新日時'
+            'ID', 'Name', 'Price', 'Category', 'Condition',
+            'Seller', 'Product URL', 'Image URL', 'Description',
+            'Created At', 'Updated At'
         ])
-        
-        # Write data
         for product in products:
             writer.writerow([
                 product.get('id', ''),
@@ -169,13 +158,12 @@ async def export_products(
                 product.get('updated_at', '').isoformat() if product.get('updated_at') else ''
             ])
 
-        # Close MongoDB connection
-        client.close()
+        # Add UTF-8 BOM and encode
+        bom = '\ufeff'  # UTF-8 BOM
+        encoded_csv = (bom + string_io.getvalue()).encode('utf-8')
 
-        # Prepare response
-        output.seek(0)
         return Response(
-            content=output.getvalue(),
+            content=encoded_csv,
             media_type='text/csv',
             headers={
                 'Content-Disposition': f'attachment; filename=products_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
@@ -185,6 +173,7 @@ async def export_products(
     except Exception as e:
         logger.error(f"Error exporting products: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/search", response_model=List[ProductResponse])
 async def search_products(search: ProductSearch):

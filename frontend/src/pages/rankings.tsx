@@ -137,8 +137,14 @@ const RankingsPage = () => {
     setIsLoading(true);
     
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/products`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/products`, {
+        params: {
+          category: category !== 'all' ? category : undefined,
+          sort_by: sortBy,
+        }
+      });
       setProducts(response.data);
+      console.log(response.data)
     } catch (error) {
       console.error('Error fetching rankings:', error);
       setSnackbarMessage('データの取得に失敗しました。');
@@ -164,6 +170,10 @@ const RankingsPage = () => {
   const handleDownloadCSV = async () => {
     try {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}api/v1/products/export`, {
+        params: {
+          category: category !== 'all' ? category : undefined,
+          sort_by: sortBy,
+        },
         responseType: 'blob'
       });
       
@@ -271,28 +281,28 @@ const RankingsPage = () => {
                           }}
                         >
                           <MenuItem value="all">すべて</MenuItem>
-                          <MenuItem value="ファッション">ファッション</MenuItem>
-                          <MenuItem value="ベビー・キッズ">ベビー・キッズ</MenuItem>
-                          <MenuItem value="ホビー・楽器・アート">ホビー・楽器・アート</MenuItem>
-                          <MenuItem value="チケット">チケット</MenuItem>
-                          <MenuItem value="本・雑誌・漫画">本・雑誌・漫画</MenuItem>
-                          <MenuItem value="生活家電・空調">生活家電・空調</MenuItem>
-                          <MenuItem value="ゲーム・おもちゃ・グッズ">ゲーム・おもちゃ・グッズ</MenuItem>
-                          <MenuItem value="アウトドア・釣り・旅行用品">アウトドア・釣り・旅行用品</MenuItem>
-                          <MenuItem value="コスメ・美容">コスメ・美容</MenuItem>
-                          <MenuItem value="食品・飲料・酒">食品・飲料・酒</MenuItem>
-                          <MenuItem value="スポーツ">スポーツ</MenuItem>
-                          <MenuItem value="ダイエット・健康">ダイエット・健康</MenuItem>
-                          <MenuItem value="家具・インテリア">家具・インテリア</MenuItem>
-                          <MenuItem value="ペット用品">ペット用品</MenuItem>
-                          <MenuItem value="DIY・工具">DIY・工具</MenuItem>
-                          <MenuItem value="フラワー・ガーデニング">フラワー・ガーデニング</MenuItem>
-                          <MenuItem value="ハンドメイド・手芸">ハンドメイド・手芸</MenuItem>
-                          <MenuItem value="車・バイク・自転車">車・バイク・自転車</MenuItem>
-                          <MenuItem value="CD・DVD・ブルーレイ">CD・DVD・ブルーレイ</MenuItem>
-                          <MenuItem value="キッチン・日用品・その他">キッチン・日用品・その他</MenuItem>
-                          <MenuItem value="スマホ・タブレット・パソコン">スマホ・タブレット・パソコン</MenuItem>
-                          <MenuItem value="テレビ・オーディオ・カメラ">テレビ・オーディオ・カメラ</MenuItem>
+                      <MenuItem value="ファッション">ファッション</MenuItem>
+                      <MenuItem value="ベビー・キッズ">ベビー・キッズ</MenuItem>
+                      <MenuItem value="ホビー・楽器・アート">ホビー・楽器・アート</MenuItem>
+                      <MenuItem value="チケット">チケット</MenuItem>
+                      <MenuItem value="本・雑誌・漫画">本・雑誌・漫画</MenuItem>
+                      <MenuItem value="生活家電・空調">生活家電・空調</MenuItem>
+                      <MenuItem value="ゲーム・おもちゃ・グッズ">ゲーム・おもちゃ・グッズ</MenuItem>
+                      <MenuItem value="アウトドア・釣り・旅行用品">アウトドア・釣り・旅行用品</MenuItem>
+                      <MenuItem value="コスメ・美容">コスメ・美容</MenuItem>
+                      <MenuItem value="食品・飲料・酒">食品・飲料・酒</MenuItem>
+                      <MenuItem value="スポーツ">スポーツ</MenuItem>
+                      <MenuItem value="ダイエット・健康">ダイエット・健康</MenuItem>
+                      <MenuItem value="家具・インテリア">家具・インテリア</MenuItem>
+                      <MenuItem value="ペット用品">ペット用品</MenuItem>
+                      <MenuItem value="DIY・工具">DIY・工具</MenuItem>
+                      <MenuItem value="フラワー・ガーデニング">フラワー・ガーデニング</MenuItem>
+                      <MenuItem value="ハンドメイド・手芸">ハンドメイド・手芸</MenuItem>
+                      <MenuItem value="車・バイク・自転車">車・バイク・自転車</MenuItem>
+                      <MenuItem value="CD・DVD・ブルーレイ">CD・DVD・ブルーレイ</MenuItem>
+                      <MenuItem value="キッチン・日用品・その他">キッチン・日用品・その他</MenuItem>
+                      <MenuItem value="スマホ・タブレット・パソコン">スマホ・タブレット・パソコン</MenuItem>
+                      <MenuItem value="テレビ・オーディオ・カメラ">テレビ・オーディオ・カメラ</MenuItem>
                         </TextField>
                       </Grid>
                       
@@ -318,10 +328,6 @@ const RankingsPage = () => {
                         >
                           <MenuItem value="price_asc">価格（安い順）</MenuItem>
                           <MenuItem value="price_desc">価格（高い順）</MenuItem>
-                          <MenuItem value="date_desc">出品日（新しい順）</MenuItem>
-                          <MenuItem value="date_asc">出品日（古い順）</MenuItem>
-                          <MenuItem value="sold_desc">売上数（多い順）</MenuItem>
-                          <MenuItem value="views_desc">閲覧数（多い順）</MenuItem>
                         </TextField>
                       </Grid>
                       
@@ -337,21 +343,21 @@ const RankingsPage = () => {
                             }
                             label="輸入品のみ"
                           />
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          startIcon={<GetAppIcon />}
-                          onClick={handleDownloadCSV}
-                          sx={{ 
-                            height: '40px',
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
-                            '&:hover': {
-                              boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
-                            }
-                          }}
-                        >
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<GetAppIcon />}
+                            onClick={handleDownloadCSV}
+                            sx={{ 
+                              height: '40px',
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
+                              '&:hover': {
+                                boxShadow: '0 6px 16px rgba(33, 150, 243, 0.3)',
+                              }
+                            }}
+                          >
                             CSV
                           </Button>
                           <Button
@@ -366,7 +372,7 @@ const RankingsPage = () => {
                             }}
                           >
                             更新
-                        </Button>
+                          </Button>
                         </Box>
                       </Grid>
                     </Grid>

@@ -141,7 +141,7 @@ const Home = () => {
                 paragraph
                 sx={{ mb: 4, maxWidth: 480 }}
               >
-                スマホで売れる“売れる商品”が秒で見つかる<br />売れる商品をラクに見つけられる。<br />
+                スマホで売れる"売れる商品"が秒で見つかる<br />売れる商品をラクに見つけられる。<br />
                 「メルカリ物販リサーチツール」
               </Typography>
               <Box sx={{ mt: 4, mb: { xs: 4, md: 0 } }}>
@@ -366,7 +366,9 @@ const Home = () => {
           textAlign: 'center',
         }}
       >
-        <Container maxWidth="md">
+      
+        <Box display={'flex'} justifyContent={'space-between'}>
+        <Box>
           <Typography
             component="h2"
             variant="h3"
@@ -380,7 +382,7 @@ const Home = () => {
             sx={{ mb: 4, opacity: 0.9 }}
           >
             迷っている時間がもったいない。<br /> 
-            今すぐ“売れる商品”を見に行こう。<br />
+            今すぐ"売れる商品"を見に行こう。<br />
             利用開始まで最短5分!<br />
           </Typography>
           <Button
@@ -406,7 +408,23 @@ const Home = () => {
             有料プランの登録操作をお願いいたします。
             </Box>
           </Typography>
-        </Container>
+          </Box>
+          <Box>
+            <Image 
+              src="/1.webp" 
+              alt="Seller Navi ダッシュボード" 
+              width={200}
+              height={100}
+              style={{
+                objectFit: 'contain',
+                maxWidth: '100%',
+                height: 'auto',
+                borderRadius: '12px',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+              }}
+            />
+          </Box>
+          </Box>
       </Box>
     </>
   );

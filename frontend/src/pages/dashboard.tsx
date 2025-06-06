@@ -120,26 +120,16 @@ const Dashboard = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
-  // State declarations
-  const [tabValue, setTabValue] = useState(0);
-  const [period, setPeriod] = useState('30days');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [isSearching, setIsSearching] = useState(false);
+ 
   const [hasSubscription, setHasSubscription] = useState(false);
   const [userPlan, setUserPlan] = useState('');
   const [canUseAI, setCanUseAI] = useState(false);
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
-  const [aiQuery, setAiQuery] = useState('');
-  const [aiResponse, setAiResponse] = useState<string | null>(null);
-  const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showDescriptionModal, setShowDescriptionModal] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
-  const [favoriteProducts, setFavoriteProducts] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('price');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -566,13 +556,6 @@ const Dashboard = () => {
                           sx={{ borderRadius: 2 }}
                         >
                           更新
-                        </Button>
-                        <Button
-                          startIcon={<DownloadIcon />}
-                          size="small"
-                          sx={{ borderRadius: 2 }}
-                        >
-                          CSV
                         </Button>
                       </Box>
                     </Box>

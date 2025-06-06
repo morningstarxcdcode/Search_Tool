@@ -33,6 +33,14 @@ interface AuthContextType {
   incrementCompetitorAnalysisCount: () => Promise<void>;
   incrementExportCount: () => Promise<void>;
   updateUserPlan: (plan: string) => Promise<void>;
+  updateProfile: (data: { name?: string; email?: string; phone?: string }) => Promise<void>;
+  updateNotificationSettings: (settings: {
+    emailNotifications: boolean;
+    trendAlerts: boolean;
+    productUpdates: boolean;
+    marketResearch: boolean;
+  }) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -54,6 +62,9 @@ const AuthContext = createContext<AuthContextType>({
   incrementCompetitorAnalysisCount: async () => {},
   incrementExportCount: async () => {},
   updateUserPlan: async () => {},
+  updateProfile: async () => {},
+  updateNotificationSettings: async () => {},
+  changePassword: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -370,6 +381,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const updateProfile = async (data: { name?: string; email?: string; phone?: string }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.patch('api/v1/auth/me/profile', data);
+      setUser(response.data);
+    } catch (err: any) {
+      console.error('Profile update error', err);
+      throw new Error(err.response?.data?.detail || 'Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateNotificationSettings = async (settings: {
+    emailNotifications: boolean;
+    trendAlerts: boolean;
+    productUpdates: boolean;
+    marketResearch: boolean;
+  }) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.patch('api/v1/auth/me/notifications', settings);
+      setUser(response.data);
+    } catch (err: any) {
+      console.error('Notification settings update error', err);
+      throw new Error(err.response?.data?.detail || 'Failed to update notification settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.post('api/v1/auth/me/change-password', {
+        current_password: currentPassword,
+        new_password: newPassword
+      });
+      setUser(response.data);
+    } catch (err: any) {
+      console.error('Password change error', err);
+      throw new Error(err.response?.data?.detail || 'Failed to change password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -390,6 +454,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       incrementCompetitorAnalysisCount,
       incrementExportCount,
       updateUserPlan,
+      updateProfile,
+      updateNotificationSettings,
+      changePassword,
     }}>
       {children}
     </AuthContext.Provider>

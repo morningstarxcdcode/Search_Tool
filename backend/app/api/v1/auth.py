@@ -1,7 +1,10 @@
 from datetime import timedelta, datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
-from ...schemas.user import UserCreate, UserResponse, Token, UserUpdate, UserInDB
+from ...schemas.user import (
+    UserCreate, UserResponse, Token, UserUpdate, UserInDB,
+    NotificationSettings, PasswordChange
+)
 from ...utils.auth import (
     verify_password,
     get_password_hash,
@@ -12,6 +15,7 @@ from ...db.mongodb import MongoDB
 from ...core.config import settings
 from ...utils.logger import setup_logger
 from bson import ObjectId
+import logging
 
 logger = setup_logger(__name__)
 router = APIRouter()
@@ -168,4 +172,187 @@ async def update_user(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Error updating user: {str(e)}"
+        )
+
+@router.patch("/me/profile", response_model=UserResponse)
+async def update_profile(
+    profile_update: UserUpdate,
+    current_user: UserInDB = Depends(get_current_active_user)
+):
+    """
+    Update user profile information
+    
+    Args:
+        profile_update: Profile update data
+        current_user: Current authenticated user
+        
+    Returns:
+        UserResponse: Updated user data
+    """
+    db = MongoDB.get_database()
+    
+    # Convert update data to dict and remove None values
+    update_data = profile_update.model_dump(exclude_unset=True)
+    
+    # Only allow updating specific profile fields
+    allowed_fields = {"name", "email", "phone"}
+    update_data = {k: v for k, v in update_data.items() if k in allowed_fields}
+    
+    if not update_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No valid profile data to update"
+        )
+    
+    try:
+        user_id = ObjectId(current_user.id)
+        
+        # Update user document
+        result = await db.users.update_one(
+            {"_id": user_id},
+            {"$set": {
+                **update_data,
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to update profile"
+            )
+        
+        # Get updated user
+        updated_user = await db.users.find_one({"_id": user_id})
+        if not updated_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found after update"
+            )
+            
+        updated_user["_id"] = str(updated_user["_id"])
+        return UserResponse(**updated_user)
+        
+    except Exception as e:
+        logger.error(f"Error updating profile: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error updating profile: {str(e)}"
+        )
+
+@router.patch("/me/notifications", response_model=UserResponse)
+async def update_notification_settings(
+    notification_settings: NotificationSettings,
+    current_user: UserInDB = Depends(get_current_active_user)
+):
+    """
+    Update user notification settings
+    
+    Args:
+        notification_settings: Notification settings data
+        current_user: Current authenticated user
+        
+    Returns:
+        UserResponse: Updated user data
+    """
+    db = MongoDB.get_database()
+    
+    try:
+        user_id = ObjectId(current_user.id)
+        
+        # Update notification settings
+        result = await db.users.update_one(
+            {"_id": user_id},
+            {"$set": {
+                "impo-noti": notification_settings.emailNotifications,
+                "trend-noti": notification_settings.trendAlerts,
+                "update-noti": notification_settings.productUpdates,
+                "search-report": notification_settings.marketResearch,
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to update notification settings"
+            )
+        
+        # Get updated user
+        updated_user = await db.users.find_one({"_id": user_id})
+        if not updated_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found after update"
+            )
+            
+        updated_user["_id"] = str(updated_user["_id"])
+        return UserResponse(**updated_user)
+        
+    except Exception as e:
+        logger.error(f"Error updating notification settings: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error updating notification settings: {str(e)}"
+        )
+
+@router.post("/me/change-password", response_model=UserResponse)
+async def change_password(
+    password_change: PasswordChange,
+    current_user: UserInDB = Depends(get_current_active_user)
+):
+    """
+    Change user password
+    
+    Args:
+        password_change: Password change data
+        current_user: Current authenticated user
+        
+    Returns:
+        UserResponse: Updated user data
+    """
+    db = MongoDB.get_database()
+    
+    try:
+        user_id = ObjectId(current_user.id)
+        
+        # Verify current password
+        user = await db.users.find_one({"_id": user_id})
+        if not user or not verify_password(password_change.current_password, user["password"]):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Current password is incorrect"
+            )
+        
+        # Update password
+        result = await db.users.update_one(
+            {"_id": user_id},
+            {"$set": {
+                "password": get_password_hash(password_change.new_password),
+                "updated_at": datetime.utcnow()
+            }}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Failed to update password"
+            )
+        
+        # Get updated user
+        updated_user = await db.users.find_one({"_id": user_id})
+        if not updated_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found after update"
+            )
+            
+        updated_user["_id"] = str(updated_user["_id"])
+        return UserResponse(**updated_user)
+        
+    except Exception as e:
+        logger.error(f"Error changing password: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error changing password: {str(e)}"
         )

@@ -1,28 +1,34 @@
-from motor.motor_asyncio import AsyncIOMotorClient
 import asyncio
 import logging
+from motor.motor_asyncio import AsyncIOMotorClient
+from datetime import datetime, timedelta
+import os
+from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Load environment variables
+load_dotenv()
+
 # MongoDB connection settings
-MONGODB_URL = "mongodb://localhost:27017"
-DB_NAME = "mercari_search"
+MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+DB_NAME = os.getenv("MONGODB_DB_NAME", "mercari_db")
 COLLECTION_NAME = "products"
 
-async def delete_all_products():
-    """Delete all products from the MongoDB collection"""
+async def delete_products():
+    """Delete products from MongoDB"""
     try:
         # Connect to MongoDB
         client = AsyncIOMotorClient(MONGODB_URL)
         db = client[DB_NAME]
         collection = db[COLLECTION_NAME]
 
-        # Delete all documents
+        # Delete all products
         result = await collection.delete_many({})
         
-        logger.info(f"Successfully deleted {result.deleted_count} products from the collection")
+        logger.info(f"Successfully deleted {result.deleted_count} products from the database")
         
         # Close the connection
         client.close()
@@ -86,4 +92,5 @@ async def main():
     # await delete_products_by_filter(filter_query)
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    # Run the async function
+    asyncio.run(delete_products()) 
