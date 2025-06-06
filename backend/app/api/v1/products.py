@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel
 import logging
+import csv
+import io
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -20,7 +22,6 @@ class ProductResponse(BaseModel):
     price_text: str
     url: str
     image_url: str
-    brand: Optional[str] = None
     category: Optional[str] = None
     condition: Optional[str] = None
     seller_name: Optional[str] = None
@@ -31,7 +32,6 @@ class ProductResponse(BaseModel):
 class ProductSearch(BaseModel):
     keyword: str
     category: Optional[str] = None
-    brand: Optional[str] = None
     min_price: Optional[int] = None
     max_price: Optional[int] = None
 
@@ -45,15 +45,28 @@ async def get_database():
         logger.error(f"Failed to connect to MongoDB: {str(e)}")
         raise HTTPException(status_code=500, detail="Database connection failed")
 
+def get_sort_query(sort_by: str):
+    """Get MongoDB sort query based on sort parameter"""
+    sort_mapping = {
+        'price_asc': [('price', 1)],
+        'price_desc': [('price', -1)],
+        'views_desc': [('views', -1)],
+        'sold_desc': [('sold', -1)],
+        'created_desc': [('created_at', -1)],
+        'updated_desc': [('updated_at', -1)]
+    }
+    return sort_mapping.get(sort_by, [('created_at', -1)])
+
 @router.get("/", response_model=List[ProductResponse])
 async def get_products(
     skip: int = 0,
     category: Optional[str] = None,
-    brand: Optional[str] = None,
     min_price: Optional[int] = None,
-    max_price: Optional[int] = None
+    max_price: Optional[int] = None,
+    sort_by: str = 'created_desc',
+    imported: Optional[bool] = None
 ):
-    """Get products from MongoDB with optional filters"""
+    """Get products from MongoDB with optional filters and sorting"""
     logger.info("Fetching products from MongoDB...")
     try:
         client, db = await get_database()
@@ -61,21 +74,25 @@ async def get_products(
 
         # Build filter
         filter_query = {}
-        if category:
+        if category and category != 'all':
             filter_query['category'] = {'$regex': category, '$options': 'i'}
-        if brand:
-            filter_query['brand'] = {'$regex': brand, '$options': 'i'}
         if min_price is not None or max_price is not None:
             filter_query['price'] = {}
             if min_price is not None:
                 filter_query['price']['$gte'] = min_price
             if max_price is not None:
                 filter_query['price']['$lte'] = max_price
+        if imported is not None:
+            filter_query['import'] = imported
 
         logger.info(f"Using filter query: {filter_query}")
 
-        # Get products with limit
-        cursor = collection.find(filter_query).skip(skip)
+        # Get sort query
+        sort_query = get_sort_query(sort_by)
+        logger.info(f"Using sort query: {sort_query}")
+
+        # Get products with limit and sort
+        cursor = collection.find(filter_query).sort(sort_query).skip(skip)
         products = await cursor.to_list(length=100)  # Limit to 100 results
         
         logger.info(f"Found {len(products)} products")
@@ -92,6 +109,83 @@ async def get_products(
         logger.error(f"Error fetching products: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/export")
+async def export_products(
+    category: Optional[str] = None,
+    min_price: Optional[int] = None,
+    max_price: Optional[int] = None,
+    sort_by: str = 'created_desc',
+    imported: Optional[bool] = None
+):
+    """Export products to CSV with optional filters and sorting"""
+    try:
+        client, db = await get_database()
+        collection = db[COLLECTION_NAME]
+
+        # Build filter
+        filter_query = {}
+        if category and category != 'all':
+            filter_query['category'] = {'$regex': category, '$options': 'i'}
+        if min_price is not None or max_price is not None:
+            filter_query['price'] = {}
+            if min_price is not None:
+                filter_query['price']['$gte'] = min_price
+            if max_price is not None:
+                filter_query['price']['$lte'] = max_price
+        if imported is not None:
+            filter_query['import'] = imported
+
+        # Get sort query
+        sort_query = get_sort_query(sort_by)
+
+        # Get all products matching filter
+        cursor = collection.find(filter_query).sort(sort_query)
+        products = await cursor.to_list(length=None)  # No limit for export
+
+        # Create CSV in memory
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow([
+            'ID', '商品名', '価格', 'カテゴリー', '状態', 
+            '出品者', '商品URL', '画像URL', '説明', 
+            '作成日時', '更新日時'
+        ])
+        
+        # Write data
+        for product in products:
+            writer.writerow([
+                product.get('id', ''),
+                product.get('name', ''),
+                product.get('price', 0),
+                product.get('category', ''),
+                product.get('condition', ''),
+                product.get('seller_name', ''),
+                product.get('url', ''),
+                product.get('image_url', ''),
+                product.get('description', ''),
+                product.get('created_at', '').isoformat() if product.get('created_at') else '',
+                product.get('updated_at', '').isoformat() if product.get('updated_at') else ''
+            ])
+
+        # Close MongoDB connection
+        client.close()
+
+        # Prepare response
+        output.seek(0)
+        return Response(
+            content=output.getvalue(),
+            media_type='text/csv',
+            headers={
+                'Content-Disposition': f'attachment; filename=products_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error exporting products: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/search", response_model=List[ProductResponse])
 async def search_products(search: ProductSearch):
     """Search products with JSON filters"""
@@ -105,8 +199,6 @@ async def search_products(search: ProductSearch):
             filter_query['name'] = {'$regex': search.keyword, '$options' : 'i'}
         if search.category:
             filter_query['category'] = {'$regex': search.category, '$options': 'i'}
-        if search.brand:
-            filter_query['brand'] = {'$regex': search.brand, '$options': 'i'}
         if search.min_price is not None or search.max_price is not None:
             filter_query['price'] = {}
             if search.min_price is not None:

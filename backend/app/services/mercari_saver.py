@@ -22,7 +22,6 @@ class ProductData:
     price_text: str
     url: str
     image_url: str
-    brand: Optional[str] = None
     category: Optional[str] = None
     condition: Optional[str] = None
     seller_name: Optional[str] = None
@@ -312,59 +311,47 @@ class FixedMercariScraper:
             image_url = next((url for url in all_images if url), '')
             print(f"   Debug - Image URL found: {image_url}")
 
-            # --- Improved Brand Extraction ---
-            brand = None
-            # Look for a label 'ブランド' and get the next sibling or value in the same row
-            brand_label = soup.find(lambda tag: tag.name in ['th', 'dt', 'div', 'span'] and 'ブランド' in tag.get_text())
-            if brand_label:
-                # Try next sibling
-                next_sib = brand_label.find_next_sibling()
-                if next_sib and next_sib.get_text(strip=True):
-                    brand = next_sib.get_text(strip=True)
-                # Try parent > next sibling (for table rows)
-                elif brand_label.parent and brand_label.parent.find_all('td'):
-                    tds = brand_label.parent.find_all('td')
-                    if len(tds) > 1:
-                        brand = tds[1].get_text(strip=True)
-            # Fallback: try previous selectors
-            if not brand:
-                brand_selectors = [
-                    'span[data-testid="ブランド"]',
-                    'span[class*="merTextLink"]',
-                    'a[href*="/search?brand"]'
-                ]
-                brand = self.extract_text_safely(soup, brand_selectors)
-            if brand and len(brand) > 20:
-                brand = None
-            print(f"   Debug - Brand found: {brand}")
-
             # --- Improved Category Extraction ---
             # Get all breadcrumb items and join them
             breadcrumb = soup.select('nav[aria-label="パンくずリスト"], nav[aria-label="breadcrumb"]')
             category = None
+            
+            # List of known non-category values to filter out
+            non_category_values = [
+                'iwaki', '松屋', '甲羅組', 'NIKE', 'ネイル工房', 'Lucille', 'SCHICK', 
+                'IRIS OHAYAMA', '西川', 'ブランド', 'Brand', '出品者', 'Seller'
+            ]
+            
             if breadcrumb:
                 items = breadcrumb[0].find_all(['a', 'span', 'div'], recursive=True)
                 categories = [item.get_text(strip=True) for item in items if item.get_text(strip=True)]
+                
+                # Filter out non-category values
+                categories = [cat for cat in categories if not any(non_cat.lower() in cat.lower() for non_cat in non_category_values)]
+                
                 if categories:
                     # Get the second category (main category) if it exists
                     if len(categories) >= 2:
                         category = categories[1]  # Second item is the main category
                     else:
                         category = categories[0]  # Fallback to first item if only one exists
-            # Fallback: try previous selectors
+            
+            # Fallback: try category-specific selectors
             if not category:
                 category_selectors = [
-                    'div[class*="merBreadcrumbItem"]',
-                    'div[role="listitem"]',
                     'a[href*="/search/category"]',
                     'span[data-testid="カテゴリ"]',
+                    'div[class*="merBreadcrumbItem"]',
+                    'div[role="listitem"]',
                     'div:contains("カテゴリ") + div'
                 ]
-                links = []
+                
                 for selector in category_selectors:
                     found = soup.select(selector)
                     if found:
                         links = [link.get_text(strip=True) for link in found if link.get_text(strip=True)]
+                        # Filter out non-category values
+                        links = [link for link in links if not any(non_cat.lower() in link.lower() for non_cat in non_category_values)]
                         if links:
                             # Get the second category if it exists
                             if len(links) >= 2:
@@ -372,6 +359,7 @@ class FixedMercariScraper:
                             else:
                                 category = links[0]
                             break
+            
             # Additional fallback: try to find category in product details
             if not category:
                 detail_selectors = [
@@ -379,6 +367,7 @@ class FixedMercariScraper:
                     'div[class*="product-details"]',
                     'div[class*="item-details"]'
                 ]
+                
                 for selector in detail_selectors:
                     details = soup.select(selector)
                     if details:
@@ -388,8 +377,16 @@ class FixedMercariScraper:
                                 # Try to extract category after "カテゴリ"
                                 parts = text.split('カテゴリ')
                                 if len(parts) > 1:
-                                    category = parts[1].strip().split('\n')[0].strip()
-                                    break
+                                    potential_category = parts[1].strip().split('\n')[0].strip()
+                                    # Filter out non-category values
+                                    if not any(non_cat.lower() in potential_category.lower() for non_cat in non_category_values):
+                                        category = potential_category
+                                        break
+            
+            # Final validation: ensure category is not empty and not a non-category value
+            if category and any(non_cat.lower() in category.lower() for non_cat in non_category_values):
+                category = None
+                
             print(f"   Debug - Category found: {category}")
 
             # Extract condition
@@ -402,14 +399,23 @@ class FixedMercariScraper:
             condition = self.extract_text_safely(soup, condition_selectors)
             print(f"   Debug - Condition found: {condition}")
 
-            # Extract seller name
+            # Extract seller name with improved selectors
             seller_selectors = [
                 'a[data-testid="seller-link"] p.bold__5616e150',
                 'div[data-testid="shops-information"] p.bold__5616e150',
                 'p.bold__5616e150',
-                '.seller-name'
+                '.seller-name',
+                'a[data-testid="seller-link"]',
+                'div[data-testid="shops-information"]',
+                'div[class*="seller"]',
+                'div[class*="shops"]',
+                'div:contains("出品者") + div',
+                'div:contains("Seller") + div'
             ]
             seller_name = self.extract_text_safely(soup, seller_selectors)
+            # Clean up seller name if it contains unwanted text
+            if seller_name:
+                seller_name = seller_name.replace('出品者', '').replace('Seller', '').strip()
             print(f"   Debug - Seller name found: {seller_name}")
 
             # Extract description
@@ -433,7 +439,6 @@ class FixedMercariScraper:
                 'price_text': price_text,
                 'url': url,
                 'image_url': image_url,
-                'brand': brand,
                 'category': category,
                 'condition': condition,
                 'seller_name': seller_name,
@@ -476,7 +481,6 @@ class FixedMercariScraper:
                     'price_text': product.price_text,
                     'url': product.url,
                     'image_url': product.image_url,
-                    'brand': product.brand,
                     'category': product.category,
                     'condition': product.condition,
                     'seller_name': product.seller_name,
@@ -527,7 +531,6 @@ class FixedMercariScraper:
                 batch_products.append(product)
                 print(f"   ✓ {product.name[:50]}... - {product.price_text}")
                 print(f"     Category: {product.category or 'N/A'}")
-                print(f"     Brand: {product.brand or 'N/A'}")
                 print(f"     Seller: {product.seller_name or 'N/A'}")
             else:
                 failed_count += 1
