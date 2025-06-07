@@ -318,16 +318,16 @@ class FixedMercariScraper:
             
             # List of known non-category values to filter out
             non_category_values = [
-                'iwaki', '松屋', '甲羅組', 'NIKE', 'ネイル工房', 'Lucille', 'SCHICK', 
-                'IRIS OHAYAMA', '西川', 'ブランド', 'Brand', '出品者', 'Seller'
+                'iwaki', '松屋', '甲羅組', 'NIKE', 'ネイル工房', 'Lucille', 'SCHICK', 'PIP',
+                'IRIS OHAYAMA', '西川', 'ブランド', 'Brand', '出品者', 'Seller', 'メルカリ', 'Mercari'
             ]
             
             if breadcrumb:
                 items = breadcrumb[0].find_all(['a', 'span', 'div'], recursive=True)
                 categories = [item.get_text(strip=True) for item in items if item.get_text(strip=True)]
                 
-                # Filter out non-category values
-                categories = [cat for cat in categories if not any(non_cat.lower() in cat.lower() for non_cat in non_category_values)]
+                # Filter out non-category values and empty strings
+                categories = [cat for cat in categories if cat and not any(non_cat.lower() in cat.lower() for non_cat in non_category_values)]
                 
                 if categories:
                     # Get the second category (main category) if it exists
@@ -339,19 +339,18 @@ class FixedMercariScraper:
             # Fallback: try category-specific selectors
             if not category:
                 category_selectors = [
-                    'a[href*="/search/category"]',
-                    'span[data-testid="カテゴリ"]',
-                    'div[class*="merBreadcrumbItem"]',
-                    'div[role="listitem"]',
-                    'div:contains("カテゴリ") + div'
+                    'span[class*="merTextLink sc-3acb98-0 dtocME"]',
+                    'a[href="/search?category"]',
+                    'a[data-location="item_details:item_info:category_link"]',
+                    'a[location-2="category_link"]',
                 ]
                 
                 for selector in category_selectors:
                     found = soup.select(selector)
                     if found:
                         links = [link.get_text(strip=True) for link in found if link.get_text(strip=True)]
-                        # Filter out non-category values
-                        links = [link for link in links if not any(non_cat.lower() in link.lower() for non_cat in non_category_values)]
+                        # Filter out non-category values and empty strings
+                        links = [link for link in links if link and not any(non_cat.lower() in link.lower() for non_cat in non_category_values)]
                         if links:
                             # Get the second category if it exists
                             if len(links) >= 2:
@@ -365,7 +364,8 @@ class FixedMercariScraper:
                 detail_selectors = [
                     'div[data-testid="商品の詳細"]',
                     'div[class*="product-details"]',
-                    'div[class*="item-details"]'
+                    'div[class*="item-details"]',
+                    'div[class*="merText"]'
                 ]
                 
                 for selector in detail_selectors:
@@ -378,13 +378,13 @@ class FixedMercariScraper:
                                 parts = text.split('カテゴリ')
                                 if len(parts) > 1:
                                     potential_category = parts[1].strip().split('\n')[0].strip()
-                                    # Filter out non-category values
-                                    if not any(non_cat.lower() in potential_category.lower() for non_cat in non_category_values):
+                                    # Filter out non-category values and empty strings
+                                    if potential_category and not any(non_cat.lower() in potential_category.lower() for non_cat in non_category_values):
                                         category = potential_category
                                         break
             
             # Final validation: ensure category is not empty and not a non-category value
-            if category and any(non_cat.lower() in category.lower() for non_cat in non_category_values):
+            if category and (not category.strip() or any(non_cat.lower() in category.lower() for non_cat in non_category_values)):
                 category = None
                 
             print(f"   Debug - Category found: {category}")
@@ -433,13 +433,10 @@ class FixedMercariScraper:
             
             # Extract like count with updated selectors
             like_selectors = [
-                'span[data-testid="like-count"]',
-                'span[class*="like-count"]',
-                'span[class*="favorite-count"]',
-                'div[class*="like-count"]',
-                'div[class*="favorite-count"]',
-                'span:contains("いいね")',
-                'span:contains("likes")'
+                'div[class="targetContainer__f205fbf7"]',
+                'div[class="merIconButton"]',
+                'div[aria-label="イイね機能を利用するには、ログインが必要です。ログインページへのリンク"]',
+                'span[class="merText body__5616e150 inherit__5616e150"]',
             ]
             
             like_count = None
@@ -621,7 +618,7 @@ async def main():
         mongo_client = AsyncIOMotorClient('mongodb://localhost:27017')
         
         # Use fixed limit of 35
-        limit = 5
+        limit = 60
         print(f"📦 Scraping {limit} products from ranking page")
         
         # Start scraping

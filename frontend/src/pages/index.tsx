@@ -367,7 +367,7 @@ const Home = () => {
         }}
       >
       
-        <Box display={'flex'} justifyContent={'space-between'}>
+        <Box display={'flex'} justifyContent={'space-around'}>
         <Box>
           <Typography
             component="h2"
@@ -411,7 +411,7 @@ const Home = () => {
           </Box>
           <Box>
             <Image 
-              src="/1.webp" 
+              src="/1.png" 
               alt="Seller Navi ダッシュボード" 
               width={200}
               height={100}

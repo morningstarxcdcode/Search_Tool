@@ -96,7 +96,7 @@ const SearchPage = () => {
   const [period, setPeriod] = useState('30days');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [sortBy, setSortBy] = useState('price');
+  const [sortBy, setSortBy] = useState('likes_desc');
   const [isImportOnly, setIsImportOnly] = useState(true);
   const [productType, setProductType] = useState('import');
   const [isSearching, setIsSearching] = useState(false);
@@ -230,7 +230,7 @@ const SearchPage = () => {
     setPeriod('30days');
     setMinPrice('');
     setMaxPrice('');
-    setSortBy('price');
+    setSortBy('likes_desc');
     setIsImportOnly(true);
     setProductType('import');
     setError(null);
@@ -493,9 +493,9 @@ const SearchPage = () => {
                         onChange={(e) => setSortBy(e.target.value)}
                         label="並び替え"
                       >
-                        <MenuItem value="price">価格順</MenuItem>
-                        <MenuItem value="newest">新着順</MenuItem>
-                        <MenuItem value="popular">人気順</MenuItem>
+                        <MenuItem value="price_asc">価格（安い順）</MenuItem>
+                        <MenuItem value="price_desc">価格（高い順）</MenuItem>
+                        <MenuItem value="likes_desc">いいね（多い順）</MenuItem>
                       </TextField>
                     </FormControl>
                   </Grid>

@@ -52,6 +52,7 @@ def get_sort_query(sort_by: str):
         'price_desc': [('price', -1)],
         'views_desc': [('views', -1)],
         'sold_desc': [('sold', -1)],
+        'likes_desc': [('like_count', -1)],
         'created_desc': [('created_at', -1)],
         'updated_desc': [('updated_at', -1)]
     }
