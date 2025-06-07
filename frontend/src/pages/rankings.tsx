@@ -78,6 +78,7 @@ interface Product {
   views?: number;
   competition?: number;
   priceHistory?: { date: string; price: number }[];
+  like_count?: number;
 }
 
 const RankingsPage = () => {
@@ -88,7 +89,7 @@ const RankingsPage = () => {
   
   const [category, setCategory] = useState('all');
   const [period, setPeriod] = useState('30days');
-  const [sortBy, setSortBy] = useState('price_desc');
+  const [sortBy, setSortBy] = useState('likes_desc');
   const [isLoading, setIsLoading] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -328,6 +329,7 @@ const RankingsPage = () => {
                         >
                           <MenuItem value="price_asc">価格（安い順）</MenuItem>
                           <MenuItem value="price_desc">価格（高い順）</MenuItem>
+                          <MenuItem value="likes_desc">いいね（多い順）</MenuItem>
                         </TextField>
                       </Grid>
                       
@@ -441,7 +443,7 @@ const RankingsPage = () => {
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>カテゴリー</TableCell>
                               <TableCell align="right" sx={{ fontWeight: 600, py: 2 }}>価格</TableCell>
                               <TableCell sx={{ fontWeight: 600, py: 2 }}>状態</TableCell>
-                              <TableCell sx={{ fontWeight: 600, py: 2 }}>出品者</TableCell>
+                              <TableCell sx={{ fontWeight: 600, py: 2 }}>いいね</TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
@@ -553,18 +555,8 @@ const RankingsPage = () => {
                                 </TableCell>
                                 <TableCell>
                                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Avatar 
-                                      sx={{ 
-                                        width: 24, 
-                                        height: 24,
-                                        fontSize: '0.75rem',
-                                        bgcolor: 'primary.main'
-                                      }}
-                                    >
-                                      {product.seller_name.charAt(0)}
-                                    </Avatar>
                                     <Typography variant="body2">
-                                      {product.seller_name}
+                                      {product.like_count || 0} いいね
                                     </Typography>
                                   </Box>
                                 </TableCell>

@@ -12,7 +12,6 @@ class ProductBase(BaseModel):
     image_url: str
     category: Optional[str] = None
     condition: Optional[str] = None
-    seller_name: Optional[str] = None
     description: Optional[str] = None
     like_count: Optional[int] = None
     created_at: datetime
@@ -32,7 +31,6 @@ class ProductUpdate(BaseModel):
     price_text: Optional[str] = None
     category: Optional[str] = None
     condition: Optional[str] = None
-    seller_name: Optional[str] = None
     description: Optional[str] = None
     like_count: Optional[int] = None
 
