@@ -21,6 +21,8 @@ module.exports = {
       log_file: './logs/backend-combined.log'
     },
 
+
+    
     {
       name: 'frontend-nextjs',
       script: 'npm',
