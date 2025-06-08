@@ -21,8 +21,6 @@ module.exports = {
       log_file: './logs/backend-combined.log'
     },
 
-
-    
     {
       name: 'frontend-nextjs',
       script: 'npm',
@@ -39,9 +37,13 @@ module.exports = {
         NODE_ENV: 'development',
         PORT: 3000
       },
+      
       error_file: './logs/frontend-error.log',
       out_file: './logs/frontend-out.log',
       log_file: './logs/frontend-combined.log'
     }
   ]
 }; 
+
+
+
