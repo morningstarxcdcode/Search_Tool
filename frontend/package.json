@@ -14,7 +14,7 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.19",
     "@mui/material": "^5.14.19",
-    "@mui/x-data-grid": "^6.18.2",
+    "@mui/x-data-grid": "^8.5.0",
     "@square/web-sdk": "^2.0.1",
     "@types/recharts": "^1.8.29",
     "axios": "^1.6.2",
