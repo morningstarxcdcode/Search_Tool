@@ -17,7 +17,7 @@
     "@mui/x-data-grid": "^6.18.2",
     "@square/web-sdk": "^2.0.1",
     "@types/recharts": "^1.8.29",
-    "axios": "^1.6.2",
+    "axios": "^1.12.0",
     "chart.js": "^4.4.0",
     "next": "14.0.3",
     "react": "^18.2.0",
